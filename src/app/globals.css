@@ -1,26 +1,103 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f7f1e8;
+  --paper-soft: #fbf7ef;
+  --ink: #171411;
+  --muted: #72695e;
+  --line: #ded4c6;
+  --moss: #4f6249;
+  --clay: #a45f3b;
+  --sage: #d8dfca;
+  --gold: #c29547;
+  --night: #20251f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-paper-soft: var(--paper-soft);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-moss: var(--moss);
+  --color-clay: var(--clay);
+  --color-sage: var(--sage);
+  --color-gold: var(--gold);
+  --color-night: var(--night);
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Iowan Old Style", "Apple Garamond", "Cormorant Garamond", Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(216, 223, 202, 0.9), transparent 24rem),
+    radial-gradient(circle at 86% 18%, rgba(194, 149, 71, 0.16), transparent 22rem),
+    linear-gradient(180deg, var(--paper-soft), var(--paper));
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.serif {
+  font-family: var(--font-serif);
+}
+
+.container-page {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+.soft-card {
+  border: 1px solid rgba(23, 20, 17, 0.1);
+  background: rgba(251, 247, 239, 0.74);
+  box-shadow: 0 24px 80px rgba(57, 45, 32, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.quiet-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(23, 20, 17, 0.12);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.quiet-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(57, 45, 32, 0.12);
+}
+
+.experience-image {
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.72), transparent 0 16%),
+    radial-gradient(circle at 72% 40%, rgba(194, 149, 71, 0.28), transparent 0 20%),
+    linear-gradient(135deg, rgba(79, 98, 73, 0.92), rgba(32, 37, 31, 0.96));
+}
+
+.path-line {
+  background-image: linear-gradient(90deg, rgba(79, 98, 73, 0.25) 50%, transparent 50%);
+  background-size: 16px 1px;
 }
