@@ -1,6 +1,6 @@
 import { experiences as seededExperiences } from "./experiences";
 import { mapExperienceRow } from "./experienceMapper";
-import { createServiceClient } from "./serverAuth";
+import { createPublicServerClient, createServiceClient } from "./serverAuth";
 import type { Experience, OnboardingState } from "./types";
 
 export type ExperienceFilters = {
@@ -35,7 +35,7 @@ function filterSeeded(filters: ExperienceFilters = {}) {
 }
 
 export async function listApprovedExperiences(filters: ExperienceFilters = {}) {
-  const supabase = createServiceClient();
+  const supabase = createPublicServerClient();
   if (!supabase) return filterSeeded(filters);
 
   let query = supabase.from("experiences").select("*").eq("status", "approved");
@@ -63,7 +63,7 @@ export async function listApprovedExperiences(filters: ExperienceFilters = {}) {
 }
 
 export async function getExperienceByIdOrSlug(idOrSlug: string) {
-  const supabase = createServiceClient();
+  const supabase = createPublicServerClient();
   if (!supabase) return seededExperiences.find((experience) => experience.id === idOrSlug || experience.slug === idOrSlug) ?? null;
 
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idOrSlug);
