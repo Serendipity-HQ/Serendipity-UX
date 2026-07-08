@@ -35,6 +35,17 @@ function filterSeeded(filters: ExperienceFilters = {}) {
   });
 }
 
+function isActionableExperience(experience: Experience) {
+  const text = [experience.title, experience.description, experience.category, experience.sourceUrl ?? ""].join(" ").toLowerCase();
+  const directoryLanguage =
+    text.includes("ongoing ") ||
+    text.includes("membership") ||
+    text.includes("members only") ||
+    text.includes("gym") ||
+    text.includes("open studio directory");
+  return Boolean(experience.sourceUrl) && !directoryLanguage;
+}
+
 export async function listApprovedExperiences(filters: ExperienceFilters = {}) {
   const supabase = createPublicServerClient();
   if (!supabase) return filterSeeded(filters);
@@ -60,7 +71,7 @@ export async function listApprovedExperiences(filters: ExperienceFilters = {}) {
     return filterSeeded(filters);
   }
 
-  return (data ?? []).map(mapExperienceRow);
+  return (data ?? []).map(mapExperienceRow).filter(isActionableExperience);
 }
 
 export async function getExperienceByIdOrSlug(idOrSlug: string) {
