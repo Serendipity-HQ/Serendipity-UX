@@ -30,8 +30,8 @@ export default async function ThisWeekPage() {
         </section>
 
         <section className="mt-12 grid gap-6">
-          {weekly.map((experience, index) => (
-            <ExperienceCard key={experience.id} experience={experience} featured={index === 0} />
+          {weekly.map((experience) => (
+            <ExperienceCard key={experience.id} experience={experience} />
           ))}
         </section>
 
