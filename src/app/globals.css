@@ -65,7 +65,7 @@ select {
 
 .soft-card {
   border: 1px solid rgba(57, 45, 32, 0.12);
-  background: rgba(255, 250, 241, 0.82);
+  background: rgba(255, 250, 241, 0.96);
   box-shadow: 0 22px 70px rgba(57, 45, 32, 0.07);
   backdrop-filter: blur(10px);
 }

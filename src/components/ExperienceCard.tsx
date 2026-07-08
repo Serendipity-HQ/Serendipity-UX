@@ -8,7 +8,7 @@ export function ExperienceCard({ experience, featured = false }: { experience: E
   const hasImage = Boolean(experience.imageUrl);
 
   return (
-    <article className={`soft-card invitation-card overflow-hidden rounded-[26px] ${featured ? "md:grid md:grid-cols-[0.42fr_1fr]" : ""}`}>
+    <article className={`soft-card invitation-card overflow-hidden rounded-[26px] text-ink ${featured ? "md:grid md:grid-cols-[0.42fr_1fr]" : ""}`}>
       <Link href={`/experiences/${experience.slug}`} className="block">
         {hasImage ? (
           <ExperienceArtwork experience={experience} className={featured ? "h-full min-h-56" : "h-40"} />
