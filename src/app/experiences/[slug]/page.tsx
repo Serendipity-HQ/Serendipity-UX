@@ -42,7 +42,7 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
 
         <section className="mt-12 grid gap-6 lg:grid-cols-[1fr_0.8fr]">
           <div className="soft-card rounded-[28px] p-7">
-            <h2 className="serif text-3xl font-semibold">Why it was recommended</h2>
+            <h2 className="serif text-3xl font-semibold">Why we think you&apos;ll enjoy this</h2>
             <p className="mt-4 leading-7 text-muted">{experience.whyRecommended}</p>
             <div className="mt-6 flex flex-wrap gap-2">
               {experience.tags.map((tag) => (
@@ -53,14 +53,14 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
             </div>
           </div>
           <div className="soft-card rounded-[28px] p-7">
-            <h2 className="serif text-3xl font-semibold">Experience texture</h2>
+            <h2 className="serif text-3xl font-semibold">What to know</h2>
             <div className="mt-5 grid gap-3 text-sm">
               <Detail label="Vibe" value={experience.vibe} />
               <Detail label="Beginner friendly" value={experience.beginnerFriendly ? "Yes" : "No"} />
               <Detail label="Social intensity" value={experience.socialIntensity} />
               <Detail label="Cadence" value={experience.cadence} />
               <Detail label="Cost" value={experience.cost} />
-              {experience.sourceUrl ? <Detail label="Source" value="Public source link available" /> : null}
+              {experience.sourceUrl ? <Detail label="Source" value="Public source" /> : null}
             </div>
           </div>
         </section>
@@ -102,7 +102,7 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
                 ))}
               </div>
               <Link href={`/experiences/${experience.slug}/reflect`} className="quiet-button mt-5 bg-night text-paper">
-                Add reflection
+                What surprised you?
               </Link>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
 
         {related.length ? (
           <section className="mt-20">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-moss">Related doors</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-moss">People who loved this also discovered</p>
             <h2 className="serif mt-3 text-5xl font-semibold">Where this could lead next.</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-3">
               {related.map((item) => <ExperienceCard key={item.id} experience={item} />)}

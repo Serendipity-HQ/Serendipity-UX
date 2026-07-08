@@ -27,7 +27,7 @@ export function ExperienceActions({ experienceId }: { experienceId: string }) {
     if (response.status === 401) {
       if (status === "saved") setSaved(toggleSaved(experienceId).includes(experienceId));
       if (status === "going") setGoing(toggleGoing(experienceId).includes(experienceId));
-      setMessage("Saved locally. Sign in to keep this across devices.");
+      setMessage("Kept locally. Sign in to keep this across devices.");
       return;
     }
 
@@ -43,7 +43,7 @@ export function ExperienceActions({ experienceId }: { experienceId: string }) {
           className={`quiet-button ${saved ? "bg-sage text-ink" : "bg-paper-soft text-ink"}`}
         >
           <Bookmark className="h-4 w-4" />
-          {saved ? "Saved" : "Save"}
+          {saved ? "Kept for later" : "Maybe Later"}
         </button>
         <button
           type="button"

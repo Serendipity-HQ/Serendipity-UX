@@ -59,7 +59,7 @@ export default function ReflectPage() {
             <input name="sparked_interest_tags" placeholder="woodworking, jazz, volunteering" className="rounded-2xl border border-line bg-paper-soft px-4 py-3 font-normal outline-none focus:border-moss" />
           </label>
           <TextArea name="private_note" label="Optional private note" />
-          <button className="quiet-button bg-night text-paper" type="submit">Save reflection</button>
+          <button className="quiet-button bg-night text-paper" type="submit">Add to my path</button>
         </form>
       </main>
     </>

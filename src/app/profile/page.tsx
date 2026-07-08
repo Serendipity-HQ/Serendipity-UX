@@ -136,11 +136,11 @@ export default function ProfilePage() {
                   <div className="font-semibold">{experience.title}</div>
                   <div className="text-sm text-muted">{experience.community}</div>
                 </div>
-                <div className="text-sm font-semibold text-moss">{going.includes(experience.id) ? "Going" : "Saved"}</div>
+                <div className="text-sm font-semibold text-moss">{going.includes(experience.id) ? "Going" : "Maybe later"}</div>
               </div>
             ))}
             {!items.length && !localGoing.length && !localSaved.length ? (
-              <p className="text-muted">Save or mark an experience as going to begin shaping your path.</p>
+              <p className="text-muted">Keep an invitation for later or mark one as going to begin shaping your path.</p>
             ) : null}
           </div>
         </section>

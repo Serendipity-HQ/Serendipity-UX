@@ -25,15 +25,15 @@ export default async function Home() {
               <Link href="/onboarding" className="quiet-button bg-night text-paper">
                 Join Serendipity <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/explore" className="quiet-button bg-paper-soft text-ink">Explore experiences</Link>
+              <Link href="/this-week" className="quiet-button bg-paper-soft text-ink">See This Week</Link>
               <Link href="/submit" className="quiet-button bg-paper-soft text-ink">Submit an experience</Link>
             </div>
           </div>
 
           <div className="soft-card rounded-[36px] p-5">
             <div className="mb-4 flex items-center justify-between px-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.24em] text-moss">This week</span>
-              <span className="rounded-full bg-sage px-3 py-1 text-xs font-semibold text-moss">3 invitations</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.24em] text-moss">Your Week</span>
+              <span className="rounded-full bg-sage px-3 py-1 text-xs font-semibold text-moss">Three invitations</span>
             </div>
             <div className="grid gap-3">
               {weekly.map((experience) => (
@@ -55,7 +55,7 @@ export default async function Home() {
         <section className="border-y border-line bg-paper-soft/70 py-20">
           <div className="container-page grid gap-6 md:grid-cols-3">
             {[
-              [Compass, "Not another event feed", "Serendipity curates fewer, better invitations instead of asking you to scroll."],
+              [Compass, "Not another feed", "Serendipity curates fewer, better invitations instead of asking you to scroll."],
               [MapPin, "Real-world only", "Every public recommendation points toward a place, a room, a host, or a community."],
               [Leaf, "Profiles as becoming", "Your profile is built from experiences attended, reflections, communities, and curiosity paths."],
             ].map(([Icon, title, copy]) => (
@@ -70,7 +70,7 @@ export default async function Home() {
 
         <section className="container-page py-24">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">How it works</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">How it works</p>
             <h2 className="serif mt-4 text-5xl font-semibold tracking-tight md:text-6xl">
               Spend less time choosing, more time becoming.
             </h2>
@@ -79,7 +79,7 @@ export default async function Home() {
             {[
               ["1", "Tell us your city and curiosities.", "A light onboarding collects interests, desired feelings, and goals."],
               ["2", "Receive three weekly invitations.", "Passion deepens what you love. Growth expands it. Surprise opens a new door."],
-              ["3", "Attend, reflect, and build your path.", "Saved, going, attended, and reflections become a private map of who you are becoming."],
+              ["3", "Attend, reflect, and build your path.", "Maybe later, I'm Going, attended, and reflections become a private map of who you are becoming."],
             ].map(([number, title, copy]) => (
               <div key={number} className="rounded-[28px] border border-line bg-paper-soft p-6">
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-night font-semibold text-paper">{number}</div>
@@ -93,13 +93,13 @@ export default async function Home() {
         <section className="border-y border-line bg-night py-24 text-paper">
           <div className="container-page grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sage">Live database</p>
-              <h2 className="serif mt-4 text-5xl font-semibold leading-none tracking-tight">A calm guide to what is worth showing up for.</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-sage">Worth discovering</p>
+              <h2 className="serif mt-4 text-5xl font-semibold leading-none tracking-tight">A calm field guide to what is worth showing up for.</h2>
               <p className="mt-6 text-lg leading-8 text-paper/70">
-                The ingestion system keeps the database fresh. Submissions enter review. Approved experiences become public.
+                A living collection of real places, hosts, communities, and small rituals around the city.
               </p>
               <Link href="/explore" className="quiet-button mt-8 bg-paper text-night">
-                Browse SF <Sparkles className="h-4 w-4" />
+                Find your next chapter <Sparkles className="h-4 w-4" />
               </Link>
             </div>
             <div className="grid gap-5">

@@ -17,11 +17,11 @@ export default async function ThisWeekPage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-moss">This week in San Francisco</p>
             <h1 className="serif mt-4 max-w-4xl text-6xl font-semibold leading-none tracking-tight">
-              One passion. One growth edge. One surprise.
+              Three invitations. One week.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">
-              Serendipity keeps the surface small on purpose. Three invitations, chosen to get you out of the app and into
-              real rooms.
+              Serendipity keeps the surface small on purpose. One invitation deepens what you love. One opens the next
+              door. One is here to surprise you.
             </p>
           </div>
           <Link href="/onboarding" className="quiet-button bg-paper-soft text-ink">
@@ -39,10 +39,10 @@ export default async function ThisWeekPage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">Alternates</p>
-              <h2 className="serif mt-3 text-5xl font-semibold">Three ways to tune the week.</h2>
+              <h2 className="serif mt-3 text-5xl font-semibold">If the week needs a different doorway.</h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
-                These are not an infinite feed. They are limited correction paths if one invitation is too far, too familiar,
-                or not the right energy this week.
+                These are not an endless feed. They are three quiet alternates if one invitation is too far, too familiar,
+                or not the right energy.
               </p>
             </div>
             <Link href="/onboarding" className="quiet-button bg-night text-paper">
@@ -54,7 +54,7 @@ export default async function ThisWeekPage() {
           </div>
           <div className="mt-8 flex justify-end">
             <Link href="/explore" className="quiet-button bg-paper text-ink">
-              Browse the database <ArrowRight className="h-4 w-4" />
+              Find your next chapter <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </section>

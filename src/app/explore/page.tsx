@@ -32,14 +32,14 @@ export default async function ExplorePage({
       <main className="container-page py-12">
         <section className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-moss">Explore</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-moss">Worth discovering</p>
             <h1 className="serif mt-4 text-6xl font-semibold leading-none tracking-tight">
               Find the rooms that might change your week.
             </h1>
           </div>
           <p className="text-lg leading-8 text-muted">
-            Browse approved experiences from the live database. No infinite feed, just real places, communities, workshops,
-            talks, rituals, and gatherings.
+            A small field guide of real places, communities, workshops, talks, rituals, and gatherings. Use it lightly.
+            Then go outside.
           </p>
         </section>
 
@@ -49,7 +49,7 @@ export default async function ExplorePage({
             <input
               name="q"
               defaultValue={get("q") ?? ""}
-              placeholder="Search pottery, jazz, founders, architecture..."
+              placeholder="Pottery, jazz, founders, architecture..."
               className="w-full rounded-2xl border border-line bg-paper-soft py-3 pl-10 pr-4 outline-none focus:border-moss"
             />
           </label>
@@ -64,7 +64,7 @@ export default async function ExplorePage({
           <input type="hidden" name="city" value={city} />
           <button className="quiet-button bg-night text-paper" type="submit">
             <SlidersHorizontal className="h-4 w-4" />
-            Filter
+            Refine
           </button>
           <Link href="/explore" className="quiet-button bg-paper-soft text-ink">Reset</Link>
         </form>
@@ -89,8 +89,8 @@ export default async function ExplorePage({
 
         {!experiences.length ? (
           <section className="soft-card mt-10 rounded-[28px] p-8">
-            <h2 className="serif text-3xl font-semibold">No matches yet.</h2>
-            <p className="mt-3 text-muted">Try fewer filters, or submit an experience that belongs here.</p>
+            <h2 className="serif text-3xl font-semibold">Nothing quiet fits yet.</h2>
+            <p className="mt-3 text-muted">The best weeks usually begin with saying yes to something unexpected.</p>
             <Link href="/submit" className="quiet-button mt-5 bg-night text-paper">Submit an experience</Link>
           </section>
         ) : null}

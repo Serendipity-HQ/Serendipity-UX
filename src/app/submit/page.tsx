@@ -45,7 +45,7 @@ export default function SubmitExperiencePage() {
           </h1>
           <p className="mt-5 text-lg leading-8 text-muted">
             Submissions go through review before becoming public. We are looking for real places, communities, workshops,
-            talks, rituals, and gatherings, not spam or purely online events.
+            talks, rituals, and gatherings, not spam or purely online experiences.
           </p>
         </section>
 
