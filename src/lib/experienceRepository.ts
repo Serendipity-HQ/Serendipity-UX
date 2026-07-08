@@ -1,5 +1,6 @@
 import { experiences as seededExperiences } from "./experiences";
 import { mapExperienceRow } from "./experienceMapper";
+import { buildWeeklyRecommendationSet } from "./recommendations";
 import { createPublicServerClient, createServiceClient } from "./serverAuth";
 import type { Experience, OnboardingState } from "./types";
 
@@ -91,52 +92,22 @@ export async function getRelatedExperiencesFor(experience: Experience) {
     .slice(0, 3);
 }
 
-function overlapScore(experience: Experience, terms: string[]) {
-  const normalized = terms.map((term) => term.toLowerCase());
-  const fields = [experience.category, experience.vibe, ...experience.tags].join(" ").toLowerCase();
-  return normalized.reduce((score, term) => score + (fields.includes(term) ? 1 : 0), 0);
+async function getRecommendationPool(city = "San Francisco") {
+  const all = await listApprovedExperiences({ city });
+  const cityPool = all.length ? all : seededExperiences.filter((experience) => experience.city === city);
+  return cityPool.length >= 3
+    ? cityPool
+    : [...cityPool, ...seededExperiences.filter((experience) => !cityPool.some((item) => item.id === experience.id))];
+}
+
+export async function getWeeklyRecommendationSetFor(profile?: OnboardingState | null, city = "San Francisco") {
+  const pool = await getRecommendationPool(city);
+  return buildWeeklyRecommendationSet(pool, profile);
 }
 
 export async function getWeeklyRecommendationsFor(profile?: OnboardingState | null, city = "San Francisco") {
-  const all = await listApprovedExperiences({ city });
-  const cityPool = all.length ? all : seededExperiences.filter((experience) => experience.city === city);
-  const pool =
-    cityPool.length >= 3
-      ? cityPool
-      : [...cityPool, ...seededExperiences.filter((experience) => !cityPool.some((item) => item.id === experience.id))];
-  const interests = profile?.interests ?? ["Design", "Coffee", "Architecture"];
-  const feelings = profile?.feelings ?? ["Curious"];
-  const goals = profile?.goals ?? ["Community"];
-
-  const byInterest = [...pool].sort((a, b) => overlapScore(b, interests) - overlapScore(a, interests));
-  const byGrowth = [...pool].sort(
-    (a, b) =>
-      overlapScore(b, [...interests, ...goals]) +
-      (b.serendipityScore ?? 60) / 20 -
-      (overlapScore(a, [...interests, ...goals]) + (a.serendipityScore ?? 60) / 20),
-  );
-  const bySurprise = [...pool].sort((a, b) => {
-    const aScore = (a.serendipityScore ?? 60) - overlapScore(a, interests) * 8 + overlapScore(a, feelings) * 3;
-    const bScore = (b.serendipityScore ?? 60) - overlapScore(b, interests) * 8 + overlapScore(b, feelings) * 3;
-    return bScore - aScore;
-  });
-
-  const chosen = new Set<string>();
-  const pick = (candidate: Experience | undefined) => {
-    if (!candidate || chosen.has(candidate.id)) return null;
-    chosen.add(candidate.id);
-    return candidate;
-  };
-
-  const passion = pick(byInterest.find((item) => item.recommendationKind === "Passion")) ?? pick(byInterest[0]);
-  const growth =
-    pick(byGrowth.find((item) => item.recommendationKind === "Growth" && !chosen.has(item.id))) ??
-    pick(byGrowth.find((item) => !chosen.has(item.id)));
-  const surprise =
-    pick(bySurprise.find((item) => item.recommendationKind === "Surprise" && !chosen.has(item.id))) ??
-    pick(bySurprise.find((item) => !chosen.has(item.id)));
-
-  return [passion, growth, surprise].filter((experience): experience is Experience => Boolean(experience));
+  const set = await getWeeklyRecommendationSetFor(profile, city);
+  return set.primary;
 }
 
 export async function listPendingExperiences() {

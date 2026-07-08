@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, RefreshCw } from "lucide-react";
 import { Header } from "@/components/Header";
 import { ExperienceCard } from "@/components/ExperienceCard";
-import { getWeeklyRecommendationsFor, listApprovedExperiences } from "@/lib/experienceRepository";
+import { getWeeklyRecommendationSetFor } from "@/lib/experienceRepository";
 
 export default async function ThisWeekPage() {
-  const weekly = await getWeeklyRecommendationsFor(null, "San Francisco");
-  const more = (await listApprovedExperiences({ city: "San Francisco" })).filter(
-    (experience) => !weekly.some((item) => item.id === experience.id),
-  );
+  const recommendationSet = await getWeeklyRecommendationSetFor(null, "San Francisco");
+  const weekly = recommendationSet.primary;
+  const alternates = recommendationSet.alternates;
 
   return (
     <>
@@ -36,16 +35,27 @@ export default async function ThisWeekPage() {
           ))}
         </section>
 
-        <section className="mt-20">
+        <section className="mt-20 rounded-[36px] border border-line bg-paper-soft p-6 md:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">More nearby</p>
-              <h2 className="serif mt-3 text-5xl font-semibold">Other doors worth opening.</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">Alternates</p>
+              <h2 className="serif mt-3 text-5xl font-semibold">Three ways to tune the week.</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-muted">
+                These are not an infinite feed. They are limited correction paths if one invitation is too far, too familiar,
+                or not the right energy this week.
+              </p>
             </div>
-            <Link href="/explore" className="quiet-button bg-night text-paper">Explore all</Link>
+            <Link href="/onboarding" className="quiet-button bg-night text-paper">
+              Tune signals <RefreshCw className="h-4 w-4" />
+            </Link>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {more.slice(0, 6).map((experience) => <ExperienceCard key={experience.id} experience={experience} />)}
+            {alternates.map((experience) => <ExperienceCard key={experience.id} experience={experience} />)}
+          </div>
+          <div className="mt-8 flex justify-end">
+            <Link href="/explore" className="quiet-button bg-paper text-ink">
+              Browse the database <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
       </main>
