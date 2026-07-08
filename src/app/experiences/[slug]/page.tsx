@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CalendarDays, EyeOff, MapPin, QrCode, UsersRound } from "lucide-react";
+import { CalendarDays, ExternalLink, EyeOff, MapPin, QrCode, UsersRound } from "lucide-react";
 import { Header } from "@/components/Header";
 import { AnonymousGuestList } from "@/components/AtlasModules";
 import { ExperienceActions } from "@/components/ExperienceActions";
@@ -36,6 +36,16 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
             </div>
             <div className="mt-7">
               <ExperienceActions experienceId={experience.id} />
+              {experience.sourceUrl ? (
+                <a
+                  href={experience.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="quiet-button mt-3 bg-paper-soft text-ink"
+                >
+                  Open sign-up page <ExternalLink className="h-4 w-4" />
+                </a>
+              ) : null}
             </div>
           </div>
         </section>
@@ -60,7 +70,7 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
               <Detail label="Social intensity" value={experience.socialIntensity} />
               <Detail label="Cadence" value={experience.cadence} />
               <Detail label="Cost" value={experience.cost} />
-              {experience.sourceUrl ? <Detail label="Source" value="Public source" /> : null}
+              {experience.sourceUrl ? <Detail label="Sign-up/info" value="Available from host" /> : null}
             </div>
           </div>
         </section>

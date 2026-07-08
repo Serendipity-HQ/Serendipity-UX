@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Clock, MapPin } from "lucide-react";
+import { ArrowUpRight, Clock, ExternalLink, MapPin } from "lucide-react";
 import type { Experience } from "@/lib/types";
 import { ExperienceActions } from "./ExperienceActions";
 import { ExperienceArtwork } from "./ExperienceArtwork";
@@ -48,6 +48,16 @@ export function ExperienceCard({ experience, featured = false }: { experience: E
         <div className="mt-5">
           <ExperienceActions experienceId={experience.id} />
         </div>
+        {experience.sourceUrl ? (
+          <a
+            href={experience.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="quiet-button mt-3 w-full bg-paper-soft text-ink"
+          >
+            Open sign-up page <ExternalLink className="h-4 w-4" />
+          </a>
+        ) : null}
       </div>
     </article>
   );
