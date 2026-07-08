@@ -21,7 +21,7 @@ export default function AuthPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      options: { emailRedirectTo: `${window.location.origin}/this-week` },
     });
 
     setMessage(error ? error.message : "Check your email for a magic link.");
@@ -47,7 +47,7 @@ export default function AuthPage() {
             <button className="quiet-button bg-night text-paper" type="submit">Send magic link</button>
           </form>
           {message ? <p className="mt-4 rounded-2xl bg-sage p-4 text-sm text-ink">{message}</p> : null}
-          <Link href="/onboarding" className="mt-6 inline-block text-sm font-semibold text-moss">Continue in local demo mode</Link>
+          <Link href="/onboarding" className="mt-6 inline-block text-sm font-semibold text-moss">Continue in local mode</Link>
         </section>
       </main>
     </>

@@ -1,34 +1,37 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { CalendarDays, EyeOff, MapPin, QrCode, UsersRound } from "lucide-react";
 import { Header } from "@/components/Header";
 import { AnonymousGuestList } from "@/components/AtlasModules";
 import { ExperienceActions } from "@/components/ExperienceActions";
 import { ExperienceArtwork } from "@/components/ExperienceArtwork";
 import { ExperienceCard } from "@/components/ExperienceCard";
-import { getExperience, getRelatedExperiences } from "@/lib/experiences";
+import { getExperienceByIdOrSlug, getRelatedExperiencesFor } from "@/lib/experienceRepository";
 
 export default async function ExperienceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const experience = getExperience(slug);
+  const experience = await getExperienceByIdOrSlug(slug);
   if (!experience) notFound();
 
-  const related = getRelatedExperiences(experience);
+  const related = await getRelatedExperiencesFor(experience);
 
   return (
     <>
       <Header />
       <main className="container-page py-12">
-        <section className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <ExperienceArtwork experience={experience} className="aspect-[4/3] rounded-[36px]" />
-          <div className="soft-card rounded-[36px] p-8">
+        <section className={`grid gap-8 ${experience.imageUrl ? "lg:grid-cols-[0.72fr_1.28fr]" : ""}`}>
+          {experience.imageUrl ? (
+            <ExperienceArtwork experience={experience} className="aspect-[4/3] rounded-[28px]" />
+          ) : null}
+          <div className="soft-card rounded-[32px] p-8">
             <div className="rounded-full bg-sage px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-moss w-fit">
               {experience.recommendationKind}
             </div>
-            <h1 className="serif mt-5 text-6xl font-semibold leading-none tracking-tight">{experience.title}</h1>
+            <h1 className="serif mt-5 max-w-5xl text-6xl font-semibold leading-none tracking-tight">{experience.title}</h1>
             <p className="mt-6 text-lg leading-8 text-muted">{experience.longDescription}</p>
             <div className="mt-7 grid gap-4 text-sm sm:grid-cols-3">
               <Fact icon={<CalendarDays className="h-4 w-4" />} label="When" value={`${experience.date}, ${experience.time}`} />
-              <Fact icon={<MapPin className="h-4 w-4" />} label="Where" value={`${experience.location}, ${experience.city}`} />
+              <Fact icon={<MapPin className="h-4 w-4" />} label="Where" value={`${experience.address ?? experience.location}, ${experience.city}`} />
               <Fact icon={<UsersRound className="h-4 w-4" />} label="Host" value={experience.host} />
             </div>
             <div className="mt-7">
@@ -57,6 +60,7 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
               <Detail label="Social intensity" value={experience.socialIntensity} />
               <Detail label="Cadence" value={experience.cadence} />
               <Detail label="Cost" value={experience.cost} />
+              {experience.sourceUrl ? <Detail label="Source" value="Public source link available" /> : null}
             </div>
           </div>
         </section>
@@ -97,6 +101,9 @@ export default async function ExperienceDetailPage({ params }: { params: Promise
                   </div>
                 ))}
               </div>
+              <Link href={`/experiences/${experience.slug}/reflect`} className="quiet-button mt-5 bg-night text-paper">
+                Add reflection
+              </Link>
             </div>
           </div>
         </section>

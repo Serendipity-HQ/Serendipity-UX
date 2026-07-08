@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Header } from "@/components/Header";
 import { experiences } from "@/lib/experiences";
@@ -56,8 +57,13 @@ export default function AdminPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-moss">Admin</p>
           <h1 className="serif mt-4 text-6xl font-semibold leading-none tracking-tight">Create experiences manually.</h1>
           <p className="mt-5 text-lg leading-8 text-muted">
-            The MVP does not scrape. It starts with carefully entered experiences that deserve to be discovered.
+            Review user submissions, manage approved experiences, and run the SF ingestion system.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/admin/review" className="quiet-button bg-night text-paper">Review submissions</Link>
+            <Link href="/admin/experiences" className="quiet-button bg-paper-soft text-ink">Experience library</Link>
+            <Link href="/admin/ingestion" className="quiet-button bg-paper-soft text-ink">Ingestion admin</Link>
+          </div>
         </section>
 
         <section className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">

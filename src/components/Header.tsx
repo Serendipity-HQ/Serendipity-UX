@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Compass } from "lucide-react";
 
 const nav = [
-  ["Dashboard", "/dashboard"],
+  ["Explore", "/explore"],
+  ["This Week", "/this-week"],
+  ["Submit", "/submit"],
   ["Profile", "/profile"],
   ["Admin", "/admin"],
 ] as const;
@@ -24,7 +26,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <Link href="/auth" className="quiet-button bg-night text-paper">
+        <Link href="/login" className="quiet-button bg-night text-paper">
           Sign in
         </Link>
       </div>

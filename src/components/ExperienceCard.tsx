@@ -5,12 +5,23 @@ import { ExperienceActions } from "./ExperienceActions";
 import { ExperienceArtwork } from "./ExperienceArtwork";
 
 export function ExperienceCard({ experience, featured = false }: { experience: Experience; featured?: boolean }) {
+  const hasImage = Boolean(experience.imageUrl);
+
   return (
-    <article className={`soft-card overflow-hidden rounded-[28px] ${featured ? "md:grid md:grid-cols-[0.9fr_1.1fr]" : ""}`}>
+    <article className={`soft-card overflow-hidden rounded-[24px] ${featured ? "md:grid md:grid-cols-[0.42fr_1fr]" : ""}`}>
       <Link href={`/experiences/${experience.slug}`} className="block">
-        <ExperienceArtwork experience={experience} className={featured ? "aspect-[5/4] h-full min-h-80" : "aspect-[4/3]"} />
+        {hasImage ? (
+          <ExperienceArtwork experience={experience} className={featured ? "h-full min-h-56" : "h-40"} />
+        ) : (
+          <div className={featured ? "flex h-full min-h-40 items-end bg-night p-5 text-paper" : "bg-night p-5 text-paper"}>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.22em] text-sage">{experience.recommendationKind}</div>
+              <div className="serif mt-2 text-2xl font-semibold leading-none">{experience.category}</div>
+            </div>
+          </div>
+        )}
       </Link>
-      <div className="p-6">
+      <div className="p-5">
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-sage px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-moss">
             {experience.recommendationKind}
@@ -20,7 +31,7 @@ export function ExperienceCard({ experience, featured = false }: { experience: E
           </Link>
         </div>
         <Link href={`/experiences/${experience.slug}`}>
-          <h3 className="serif mt-5 text-3xl font-semibold leading-tight tracking-tight">{experience.title}</h3>
+          <h3 className="serif mt-4 text-2xl font-semibold leading-tight tracking-tight">{experience.title}</h3>
         </Link>
         <p className="mt-3 text-sm leading-6 text-muted">{experience.description}</p>
         <div className="mt-5 flex items-center gap-2 text-sm text-muted">

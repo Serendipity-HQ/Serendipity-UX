@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { ChoicePills } from "@/components/ChoicePills";
+import { authedFetch } from "@/lib/clientApi";
 import { feelings, goals, interests } from "@/lib/experiences";
 import { writeOnboarding } from "@/lib/storage";
 
@@ -12,14 +13,28 @@ export default function OnboardingPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>(["Design", "Coffee"]);
   const [selectedFeelings, setSelectedFeelings] = useState<string[]>(["Curious"]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>(["Community"]);
+  const [city, setCity] = useState("San Francisco");
 
-  function submit() {
-    writeOnboarding({
+  async function submit() {
+    const profile = {
+      city,
       interests: selectedInterests,
       feelings: selectedFeelings,
       goals: selectedGoals,
-    });
-    router.push("/dashboard");
+    };
+    writeOnboarding(profile);
+
+    await authedFetch("/api/me", {
+      method: "PUT",
+      body: JSON.stringify({
+        city,
+        interests: selectedInterests,
+        desired_feelings: selectedFeelings,
+        goals: selectedGoals,
+      }),
+    }).catch(() => null);
+
+    router.push("/this-week");
   }
 
   return (
@@ -35,6 +50,14 @@ export default function OnboardingPage() {
         </section>
 
         <div className="mt-12 grid gap-6">
+          <Question title="Where are you?">
+            <input
+              value={city}
+              onChange={(event) => setCity(event.target.value)}
+              className="w-full rounded-2xl border border-line bg-paper-soft px-4 py-3 outline-none focus:border-moss"
+              placeholder="San Francisco"
+            />
+          </Question>
           <Question title="What are you curious about?">
             <ChoicePills options={interests} selected={selectedInterests} onChange={setSelectedInterests} />
           </Question>

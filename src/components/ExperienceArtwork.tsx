@@ -14,6 +14,12 @@ const categoryColors: Record<string, string> = {
 export function ExperienceArtwork({ experience, className = "" }: { experience: Experience; className?: string }) {
   return (
     <div className={`relative overflow-hidden bg-gradient-to-br ${categoryColors[experience.category] ?? categoryColors.Design} ${className}`}>
+      {experience.imageUrl ? (
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `linear-gradient(180deg, rgba(23,20,17,0.06), rgba(23,20,17,0.42)), url(${experience.imageUrl})` }}
+        />
+      ) : null}
       <div className="absolute inset-0 opacity-80">
         <div className="absolute left-[12%] top-[14%] h-28 w-28 rounded-full border border-paper/25" />
         <div className="absolute bottom-[18%] right-[14%] h-36 w-36 rounded-full bg-paper/10" />
