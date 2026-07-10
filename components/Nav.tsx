@@ -21,7 +21,7 @@ export default function Nav() {
 
   if (isPublicPage || !isLoggedIn) {
     return (
-      <header className="sticky top-0 z-50 bg-white/8 backdrop-blur-2xl border-b border-white/14">
+      <header className="sticky top-0 z-50 bg-[#172832]/42 backdrop-blur-md border-b border-white/8">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
             <Leaf className="w-4 h-4 text-[#F8E1C5] transition-transform duration-300 group-hover:rotate-12" strokeWidth={1.5} />
@@ -45,7 +45,7 @@ export default function Nav() {
   return (
     <>
       {/* Desktop top nav */}
-      <header className="hidden md:block sticky top-0 z-50 bg-white/8 backdrop-blur-2xl border-b border-white/14">
+      <header className="hidden md:block sticky top-0 z-50 bg-[#172832]/42 backdrop-blur-md border-b border-white/8">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/home" className="flex items-center gap-2 group">
             <Leaf className="w-4 h-4 text-[#F8E1C5] transition-transform duration-300 group-hover:rotate-12" strokeWidth={1.5} />
@@ -59,7 +59,7 @@ export default function Nav() {
                   key={href}
                   href={href}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs tracking-widest uppercase transition-all duration-200 ${
-                    active ? 'bg-white/18 text-cream shadow-sm border border-white/16' : 'text-muted hover:text-charcoal hover:bg-white/10'
+                    active ? 'bg-white/10 text-cream border border-white/10' : 'text-muted hover:text-charcoal hover:bg-white/[0.06]'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />
@@ -72,7 +72,7 @@ export default function Nav() {
       </header>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/8 backdrop-blur-2xl border-t border-white/14">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#172832]/52 backdrop-blur-md border-t border-white/8">
         <div className="flex">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')

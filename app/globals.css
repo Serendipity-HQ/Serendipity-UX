@@ -131,21 +131,21 @@ p {
   position: relative;
   isolation: isolate;
   border-radius: 34px;
-  border: 1px solid rgba(237, 244, 248, 0.42);
-  background-color: rgba(237, 244, 248, 0.12);
+  border: 1px solid rgba(237, 244, 248, 0.24);
+  background-color: rgba(20, 38, 46, 0.38);
   background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.11) 18%, rgba(255, 255, 255, 0.035) 45%, rgba(10, 22, 28, 0.10) 100%),
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.42) 0 0.08rem, transparent 9rem),
-    radial-gradient(circle at 94% 92%, rgba(196, 214, 226, 0.24) 0 0.08rem, transparent 12rem);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.055) 24%, rgba(255, 255, 255, 0.018) 52%, rgba(6, 18, 24, 0.08) 100%),
+    radial-gradient(circle at 16% 10%, rgba(255, 255, 255, 0.15) 0 0.08rem, transparent 9rem),
+    radial-gradient(circle at 94% 92%, rgba(196, 214, 226, 0.11) 0 0.08rem, transparent 12rem);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.62),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
-    inset 18px 0 42px rgba(255, 255, 255, 0.045),
-    inset -18px 0 42px rgba(3, 15, 20, 0.13),
-    0 30px 74px rgba(2, 9, 12, 0.36),
-    0 8px 22px rgba(2, 9, 12, 0.20);
-  backdrop-filter: blur(44px) saturate(1.65) contrast(1.08) brightness(1.14);
-  -webkit-backdrop-filter: blur(44px) saturate(1.65) contrast(1.08) brightness(1.14);
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    inset 14px 0 34px rgba(255, 255, 255, 0.025),
+    inset -14px 0 34px rgba(3, 15, 20, 0.10),
+    0 24px 56px rgba(2, 9, 12, 0.26),
+    0 6px 16px rgba(2, 9, 12, 0.14);
+  backdrop-filter: blur(22px) saturate(1.16) contrast(1.02) brightness(1.04);
+  -webkit-backdrop-filter: blur(22px) saturate(1.16) contrast(1.02) brightness(1.04);
 }
 
 .liquid-card::before,
@@ -156,9 +156,9 @@ p {
   z-index: -1;
   border-radius: inherit;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.20), transparent 22%, transparent 72%, rgba(255, 255, 255, 0.12)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%);
-  opacity: 0.8;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.09), transparent 24%, transparent 76%, rgba(255, 255, 255, 0.055)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 34%);
+  opacity: 0.58;
   pointer-events: none;
 }
 
@@ -169,11 +169,11 @@ p {
   inset: 1px;
   z-index: -1;
   border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    inset 0 0 24px rgba(255, 255, 255, 0.10),
-    inset 0 16px 36px rgba(255, 255, 255, 0.055),
-    inset 0 -18px 36px rgba(4, 17, 22, 0.16);
+    inset 0 0 18px rgba(255, 255, 255, 0.045),
+    inset 0 14px 28px rgba(255, 255, 255, 0.035),
+    inset 0 -16px 30px rgba(4, 17, 22, 0.11);
   pointer-events: none;
 }
 
@@ -185,15 +185,15 @@ p {
     background 0.28s ease;
 }
 .card-lift:hover {
-  transform: translateY(-4px) scale(1.005);
-  border-color: rgba(255, 255, 255, 0.58);
+  transform: translateY(-2px) scale(1.002);
+  border-color: rgba(255, 255, 255, 0.32);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.74),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
-    inset 16px 0 40px rgba(255, 255, 255, 0.055),
-    inset -16px 0 42px rgba(3, 15, 20, 0.14),
-    0 34px 78px rgba(0, 0, 0, 0.42),
-    0 10px 26px rgba(0, 0, 0, 0.22);
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+    inset 14px 0 34px rgba(255, 255, 255, 0.03),
+    inset -14px 0 34px rgba(3, 15, 20, 0.10),
+    0 26px 58px rgba(0, 0, 0, 0.30),
+    0 8px 18px rgba(0, 0, 0, 0.16);
 }
 
 .lane-accent {
@@ -280,23 +280,23 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(199, 205, 229, 0.48) 0 18rem, transparent 39rem),
-    radial-gradient(circle at 88% 10%, rgba(186, 214, 224, 0.38) 0 19rem, transparent 42rem),
-    radial-gradient(circle at 48% 46%, rgba(242, 229, 214, 0.16) 0 16rem, transparent 36rem),
-    radial-gradient(circle at 82% 82%, rgba(24, 79, 58, 0.58) 0 25rem, transparent 54rem),
-    radial-gradient(circle at 8% 86%, rgba(31, 54, 68, 0.46) 0 22rem, transparent 50rem);
+    radial-gradient(circle at 12% 8%, rgba(199, 205, 229, 0.34) 0 18rem, transparent 39rem),
+    radial-gradient(circle at 88% 10%, rgba(186, 214, 224, 0.27) 0 19rem, transparent 42rem),
+    radial-gradient(circle at 48% 46%, rgba(242, 229, 214, 0.10) 0 16rem, transparent 36rem),
+    radial-gradient(circle at 82% 82%, rgba(24, 79, 58, 0.44) 0 25rem, transparent 54rem),
+    radial-gradient(circle at 8% 86%, rgba(31, 54, 68, 0.34) 0 22rem, transparent 50rem);
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  transform: translate3d(-1.5vmax, -1vmax, 0) scale(1.02);
+  opacity: 0.82;
+  transform: translate3d(0, 0, 0) scale(1.01);
   transform-origin: center;
-  animation: ambient-bokeh-drift 62s ease-in-out infinite alternate;
-  will-change: transform;
+  animation: none;
 }
 
 .liquid-card,
 .liquid-panel {
-  backdrop-filter: blur(46px) saturate(1.75) contrast(1.08) brightness(1.16) !important;
-  -webkit-backdrop-filter: blur(46px) saturate(1.75) contrast(1.08) brightness(1.16) !important;
+  backdrop-filter: blur(22px) saturate(1.16) contrast(1.02) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.16) contrast(1.02) brightness(1.04) !important;
 }
 
 @keyframes ambient-bokeh-drift {

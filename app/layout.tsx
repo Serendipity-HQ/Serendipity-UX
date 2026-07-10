@@ -39,17 +39,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 z-index: 0 !important;
                 pointer-events: none !important;
                 background-image:
-                  radial-gradient(circle at 12% 8%, rgba(199, 205, 229, 0.48) 0 18rem, transparent 39rem),
-                  radial-gradient(circle at 88% 10%, rgba(186, 214, 224, 0.38) 0 19rem, transparent 42rem),
-                  radial-gradient(circle at 48% 46%, rgba(242, 229, 214, 0.16) 0 16rem, transparent 36rem),
-                  radial-gradient(circle at 82% 82%, rgba(24, 79, 58, 0.58) 0 25rem, transparent 54rem),
-                  radial-gradient(circle at 8% 86%, rgba(31, 54, 68, 0.46) 0 22rem, transparent 50rem) !important;
+                  radial-gradient(circle at 12% 8%, rgba(199, 205, 229, 0.34) 0 18rem, transparent 39rem),
+                  radial-gradient(circle at 88% 10%, rgba(186, 214, 224, 0.27) 0 19rem, transparent 42rem),
+                  radial-gradient(circle at 48% 46%, rgba(242, 229, 214, 0.10) 0 16rem, transparent 36rem),
+                  radial-gradient(circle at 82% 82%, rgba(24, 79, 58, 0.44) 0 25rem, transparent 54rem),
+                  radial-gradient(circle at 8% 86%, rgba(31, 54, 68, 0.34) 0 22rem, transparent 50rem) !important;
                 background-size: 100% 100% !important;
                 background-repeat: no-repeat !important;
-                transform: translate3d(-1.5vmax, -1vmax, 0) scale(1.02);
+                opacity: 0.82 !important;
+                transform: translate3d(0, 0, 0) scale(1.01);
                 transform-origin: center;
-                animation: serendipity-bokeh-bleed 62s ease-in-out infinite alternate !important;
-                will-change: transform;
+                animation: none !important;
               }
 
               body > :not(script):not(style) {
@@ -65,7 +65,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               .liquid-card,
               .liquid-panel {
-                backdrop-filter: blur(46px) saturate(1.75) contrast(1.08) brightness(1.16) !important;
+                backdrop-filter: blur(22px) saturate(1.16) contrast(1.02) brightness(1.04) !important;
+                -webkit-backdrop-filter: blur(22px) saturate(1.16) contrast(1.02) brightness(1.04) !important;
               }
 
               @media (prefers-reduced-motion: reduce) {
