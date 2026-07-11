@@ -1,7 +1,7 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import type { User, Transaction, Booking, Post, Connection, Experience, Host } from '@/lib/types'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import type { User, Transaction, Booking, Post, Connection, Experience, Host, NewExperienceInput } from '@/lib/types'
 import {
   DEMO_USER,
   DEMO_TRANSACTIONS,
@@ -38,6 +38,8 @@ type AppState = {
   isFollowedBy: (targetId: string) => boolean
   createPost: (content: string, experienceId: string | null, photo?: string) => void
   resonatePost: (postId: string) => void
+  createExperience: (input: NewExperienceInput) => Experience | null
+  myHostedExperiences: Experience[]
 }
 
 const AppContext = createContext<AppState | null>(null)
@@ -48,7 +50,16 @@ const STORAGE_KEYS = {
   bookings: 'serendipity_bookings',
   connections: 'serendipity_connections',
   posts: 'serendipity_posts',
+  hostExperiences: 'serendipity_host_experiences',
+  hostRecords: 'serendipity_host_records',
   loggedIn: 'serendipity_logged_in',
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 }
 
 function load<T>(key: string, fallback: T): T {
@@ -74,6 +85,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [posts, setPosts] = useState<Post[]>([])
   const [experiences, setExperiences] = useState<Experience[]>(EXPERIENCES)
   const [hosts, setHosts] = useState<Host[]>(HOSTS)
+  const [hostExperiences, setHostExperiences] = useState<Experience[]>([])
+  const [hostRecords, setHostRecords] = useState<Host[]>([])
   const [eventsSource, setEventsSource] = useState<'supabase' | 'mock'>('mock')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -105,6 +118,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setBookings(load<Booking[]>(STORAGE_KEYS.bookings, DEMO_BOOKINGS))
       setConnections(load<Connection[]>(STORAGE_KEYS.connections, SEED_CONNECTIONS))
       setPosts(load<Post[]>(STORAGE_KEYS.posts, SEED_POSTS))
+      setHostExperiences(load<Experience[]>(STORAGE_KEYS.hostExperiences, []))
+      setHostRecords(load<Host[]>(STORAGE_KEYS.hostRecords, []))
     }
     setHydrated(true)
   }, [])
@@ -114,6 +129,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const persistBookings = useCallback((b: Booking[]) => { setBookings(b); save(STORAGE_KEYS.bookings, b) }, [])
   const persistConnections = useCallback((c: Connection[]) => { setConnections(c); save(STORAGE_KEYS.connections, c) }, [])
   const persistPosts = useCallback((p: Post[]) => { setPosts(p); save(STORAGE_KEYS.posts, p) }, [])
+  const persistHostExperiences = useCallback((e: Experience[]) => { setHostExperiences(e); save(STORAGE_KEYS.hostExperiences, e) }, [])
+  const persistHostRecords = useCallback((h: Host[]) => { setHostRecords(h); save(STORAGE_KEYS.hostRecords, h) }, [])
 
   const login = useCallback(
     (email: string, _password: string, userData?: Partial<User>) => {
@@ -124,12 +141,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         interests: userData?.interests ?? DEMO_USER.interests,
         walletBalanceCents: DEMO_USER.walletBalanceCents,
         savedPaymentMethods: DEMO_USER.savedPaymentMethods,
+        role: userData?.role ?? 'attendee',
+        ...(userData?.hostProfile ? { hostProfile: userData.hostProfile } : {}),
       }
       persistUser(newUser)
       persistTransactions(load<Transaction[]>(STORAGE_KEYS.transactions, DEMO_TRANSACTIONS))
       persistBookings(load<Booking[]>(STORAGE_KEYS.bookings, DEMO_BOOKINGS))
       persistConnections(load<Connection[]>(STORAGE_KEYS.connections, SEED_CONNECTIONS))
       persistPosts(load<Post[]>(STORAGE_KEYS.posts, SEED_POSTS))
+      setHostExperiences(load<Experience[]>(STORAGE_KEYS.hostExperiences, []))
+      setHostRecords(load<Host[]>(STORAGE_KEYS.hostRecords, []))
       setIsLoggedIn(true)
       save(STORAGE_KEYS.loggedIn, true)
     },
@@ -139,6 +160,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setUser(null); setTransactions([]); setBookings([])
     setConnections([]); setPosts([]); setIsLoggedIn(false)
+    setHostExperiences([]); setHostRecords([])
     Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k))
   }, [])
 
@@ -280,14 +302,66 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [posts, persistPosts]
   )
 
+  const createExperience = useCallback(
+    (input: NewExperienceInput): Experience | null => {
+      if (!user || user.role !== 'host' || !user.hostProfile) return null
+      const { hostId, venueName, craft, motivation } = user.hostProfile
+      if (!hostRecords.some((h) => h.id === hostId)) {
+        persistHostRecords([...hostRecords, {
+          id: hostId,
+          name: user.name,
+          bio: motivation || craft || user.bio,
+          venue: venueName,
+          avatarSeed: slugify(user.name) || hostId,
+        }])
+      }
+      const experience: Experience = {
+        id: `he${Date.now()}`,
+        title: input.title,
+        lane: input.lane,
+        hostId,
+        description: input.description,
+        location: input.location,
+        dateTime: input.dateTime,
+        price: input.price,
+        spotsTotal: input.spotsTotal,
+        spotsBooked: 0,
+        imageSeed: slugify(input.title) || `he${Date.now()}`,
+        tags: input.tags,
+      }
+      persistHostExperiences([experience, ...hostExperiences])
+      return experience
+    },
+    [user, hostRecords, hostExperiences, persistHostRecords, persistHostExperiences]
+  )
+
+  // Host-created experiences sit alongside curated/Supabase ones so they show
+  // up in Discover and the weekly recommendation pool.
+  const allExperiences = useMemo(() => {
+    const localIds = new Set(hostExperiences.map((e) => e.id))
+    return [...hostExperiences, ...experiences.filter((e) => !localIds.has(e.id))]
+  }, [hostExperiences, experiences])
+
+  const allHosts = useMemo(() => {
+    const localIds = new Set(hostRecords.map((h) => h.id))
+    return [...hostRecords, ...hosts.filter((h) => !localIds.has(h.id))]
+  }, [hostRecords, hosts])
+
+  const myHostedExperiences = useMemo(() => {
+    if (!user?.hostProfile) return []
+    return hostExperiences.filter((e) => e.hostId === user.hostProfile!.hostId)
+  }, [user, hostExperiences])
+
   if (!hydrated) return null
 
   return (
     <AppContext.Provider value={{
-      user, transactions, bookings, connections, posts, experiences, hosts, eventsSource, isLoggedIn,
+      user, transactions, bookings, connections, posts,
+      experiences: allExperiences, hosts: allHosts, eventsSource, isLoggedIn,
       login, logout, addFunds, bookExperience, cancelBooking,
       addPaymentMethod, removePaymentMethod, updateUserInterests, updateUserBio,
       follow, unfollow, isFollowing, isFollowedBy, createPost, resonatePost,
+      createExperience, myHostedExperiences,
     }}>
       {children}
     </AppContext.Provider>

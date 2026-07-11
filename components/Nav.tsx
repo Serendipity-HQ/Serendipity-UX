@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Compass, BookOpen, Users, User, Leaf } from 'lucide-react'
+import { Home, Compass, BookOpen, Users, User, Leaf, Sparkles } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 
 const NAV_ITEMS = [
@@ -13,9 +13,14 @@ const NAV_ITEMS = [
   { href: '/profile',  label: 'Profile', icon: User },
 ]
 
+const HOST_NAV_ITEM = { href: '/host', label: 'Host', icon: Sparkles }
+
 export default function Nav() {
   const pathname = usePathname()
-  const { isLoggedIn } = useApp()
+  const { isLoggedIn, user } = useApp()
+  const navItems = user?.role === 'host'
+    ? [...NAV_ITEMS.slice(0, 2), HOST_NAV_ITEM, ...NAV_ITEMS.slice(2)]
+    : NAV_ITEMS
 
   const isPublicPage = ['/', '/login', '/signup'].includes(pathname)
 
@@ -52,7 +57,7 @@ export default function Nav() {
             <span className="font-serif text-base tracking-wide text-charcoal">Serendipity</span>
           </Link>
           <nav className="flex items-center gap-1">
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            {navItems.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
               return (
                 <Link
@@ -74,7 +79,7 @@ export default function Nav() {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#172832]/52 backdrop-blur-md border-t border-white/8">
         <div className="flex">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link

@@ -31,6 +31,19 @@ export type PaymentMethod = {
   expiry: string
 }
 
+export type UserRole = 'attendee' | 'host'
+
+export type HostProfile = {
+  hostId: string
+  venueName: string
+  neighborhood: string
+  craft: string
+  motivation: string
+  lanes: Lane[]
+  groupSize: string
+  hostingBackground: string
+}
+
 export type User = {
   id: string
   name: string
@@ -39,6 +52,19 @@ export type User = {
   interests: string[]
   walletBalanceCents: number
   savedPaymentMethods: PaymentMethod[]
+  role?: UserRole
+  hostProfile?: HostProfile
+}
+
+export type NewExperienceInput = {
+  title: string
+  lane: Lane
+  description: string
+  location: string
+  dateTime: string
+  price: number
+  spotsTotal: number
+  tags: string[]
 }
 
 export type Transaction = {
