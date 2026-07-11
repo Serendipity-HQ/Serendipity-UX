@@ -1,6 +1,6 @@
 import { HOSTS as FALLBACK_HOSTS, EXPERIENCES as FALLBACK_EXPERIENCES } from './mock-data'
 import { createPublicServerClient, isSupabaseConfigured } from './supabase'
-import type { Experience, Host, Lane } from './types'
+import type { Experience, Host, Lane } from '@serendipity-hq/design'
 
 type ExperienceRow = Record<string, unknown>
 

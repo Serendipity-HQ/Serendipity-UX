@@ -7,8 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { SEED_USERS, EXPERIENCES, SEED_POSTS } from '@/lib/mock-data'
-import LaneBadge from '@/components/LaneBadge'
-import Reveal from '@/components/Reveal'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 function timeAgo(iso: string) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000

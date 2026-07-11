@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, CreditCard, ArrowUpRight, ArrowDownLeft, RotateCcw } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import type { Experience, Transaction } from '@/lib/types'
+import type { Experience, Transaction } from '@serendipity-hq/design'
 
 const PRESET_AMOUNTS = [25, 50, 100, 200]
 

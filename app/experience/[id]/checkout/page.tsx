@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, CheckCircle, CreditCard, Wallet, QrCode } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { PLATFORM_FEE_RATE } from '@/lib/constants'
-import LaneBadge from '@/components/LaneBadge'
+import { LaneBadge } from '@serendipity-hq/ui'
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleDateString('en-US', {

@@ -6,9 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { LogOut, Edit2, Check, X, Ticket, Wallet, ArrowRight } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS } from '@/lib/constants'
-import LaneBadge from '@/components/LaneBadge'
-import Reveal from '@/components/Reveal'
+import { INTEREST_TAGS } from '@serendipity-hq/design'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })

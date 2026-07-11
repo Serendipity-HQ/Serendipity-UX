@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Leaf, Check, Compass, Sparkles } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS, LANE_LABELS } from '@/lib/constants'
-import type { Lane, UserRole } from '@/lib/types'
+import { INTEREST_TAGS, LANE_LABELS } from '@serendipity-hq/design'
+import type { Lane, UserRole } from '@serendipity-hq/design'
 
 type Step = 'role' | 'account' | 'interests' | 'questionnaire'
 

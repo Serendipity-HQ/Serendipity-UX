@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Sparkles } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS, LANE_LABELS } from '@/lib/constants'
-import type { Lane } from '@/lib/types'
-import ExperienceCard from '@/components/ExperienceCard'
-import LaneBadge from '@/components/LaneBadge'
-import Reveal from '@/components/Reveal'
+import { INTEREST_TAGS, LANE_LABELS } from '@serendipity-hq/design'
+import type { Lane } from '@serendipity-hq/design'
+import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 const LANES: Lane[] = ['passion', 'growth', 'surprise']
 

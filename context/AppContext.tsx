@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import type { User, Transaction, Booking, Post, Connection, Experience, Host, NewExperienceInput } from '@/lib/types'
+import type { User, Transaction, Booking, Post, Connection, Experience, Host, NewExperienceInput } from '@serendipity-hq/design'
 import {
   DEMO_USER,
   DEMO_TRANSACTIONS,

@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { SEED_USERS } from '@/lib/mock-data'
-import Reveal from '@/components/Reveal'
+import { Reveal } from '@serendipity-hq/ui'
 
 function PersonCard({ seedUser, isFollowing, isMutual, onFollow, onUnfollow }: {
   seedUser: typeof SEED_USERS[0]

@@ -6,10 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { MapPin, Clock, Users, ArrowLeft, CheckCircle } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import LaneBadge from '@/components/LaneBadge'
-import ExperienceCard from '@/components/ExperienceCard'
-import Reveal from '@/components/Reveal'
-import GuestList from '@/components/GuestList'
+import { LaneBadge, ExperienceCard, Reveal, GuestList } from '@serendipity-hq/ui'
+import { EXPERIENCE_ATTENDEES, SEED_USERS } from '@/lib/mock-data'
 
 function formatDateTime(dt: string) {
   const d = new Date(dt)
@@ -150,7 +148,13 @@ export default function ExperienceDetailPage({
           {/* Guest list */}
           <Reveal delay={140}>
             <div className="liquid-card rounded-[28px] p-5">
-              <GuestList experienceId={experience.id} spotsBooked={experience.spotsBooked} />
+              <GuestList
+                spotsBooked={experience.spotsBooked}
+                attendees={(EXPERIENCE_ATTENDEES[experience.id] ?? [])
+                  .map((uid) => SEED_USERS.find((u) => u.id === uid))
+                  .filter((u) => u !== undefined)}
+                experiences={experiences}
+              />
             </div>
           </Reveal>
 

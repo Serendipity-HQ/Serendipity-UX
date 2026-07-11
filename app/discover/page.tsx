@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { Search } from 'lucide-react'
-import type { Lane } from '@/lib/types'
+import type { Lane } from '@serendipity-hq/design'
 import { useApp } from '@/context/AppContext'
-import ExperienceCard from '@/components/ExperienceCard'
-import LaneBadge from '@/components/LaneBadge'
-import Reveal from '@/components/Reveal'
+import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 const LANES: { value: Lane | 'all'; label: string }[] = [
   { value: 'all',      label: 'All' },

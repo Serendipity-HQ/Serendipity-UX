@@ -1,4 +1,4 @@
-import type { Experience, Host, User, Transaction, Booking, SeedUser, Post, Connection } from './types'
+import type { Experience, Host, User, Transaction, Booking, SeedUser, Post, Connection } from '@serendipity-hq/design'
 
 export const HOSTS: Host[] = [
   {
