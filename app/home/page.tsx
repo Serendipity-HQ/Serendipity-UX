@@ -6,10 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import type { Experience, Host, Lane } from '@/lib/types'
-import ExperienceCard from '@/components/ExperienceCard'
-import LaneBadge from '@/components/LaneBadge'
-import Reveal from '@/components/Reveal'
+import type { Experience, Host, Lane } from '@serendipity-hq/design'
+import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 function getGreeting() {
   const h = new Date().getHours()

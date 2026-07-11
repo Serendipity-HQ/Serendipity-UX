@@ -6,8 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Clock, MapPin, QrCode, X } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import type { Booking, Experience, Host } from '@/lib/types'
-import LaneBadge from '@/components/LaneBadge'
+import type { Booking, Experience, Host } from '@serendipity-hq/design'
+import { LaneBadge } from '@serendipity-hq/ui'
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleDateString('en-US', {

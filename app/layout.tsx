@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AppProvider } from '@/context/AppContext'
-import Nav from '@/components/Nav'
+import AppNav from '@/components/AppNav'
 
 export const metadata: Metadata = {
   title: 'Serendipity — Experiences Worth Having',
@@ -80,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen text-charcoal">
         <AppProvider>
-          <Nav />
+          <AppNav />
           <main className="pb-20 md:pb-0">{children}</main>
         </AppProvider>
       </body>

@@ -7,9 +7,8 @@ import Link from 'next/link'
 import { X, ImageIcon, PenLine } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { SEED_USERS } from '@/lib/mock-data'
-import type { Experience, Post } from '@/lib/types'
-import LaneBadge from '@/components/LaneBadge'
-import Reveal from '@/components/Reveal'
+import type { Experience, Post } from '@serendipity-hq/design'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 function formatEntryDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
