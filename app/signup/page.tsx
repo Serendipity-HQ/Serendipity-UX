@@ -5,10 +5,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Leaf, Check, Compass, Sparkles } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS, LANE_LABELS } from '@serendipity-hq/design'
+import { LANE_LABELS } from '@serendipity-hq/design'
 import type { Lane, UserRole } from '@serendipity-hq/design'
+import AttendeeOnboarding from './AttendeeOnboarding'
+import './onboarding.css'
 
-type Step = 'role' | 'account' | 'interests' | 'questionnaire'
+type Step = 'role' | 'account' | 'survey' | 'questionnaire'
 
 const LANES: Lane[] = ['passion', 'growth', 'surprise']
 
@@ -38,7 +40,6 @@ export default function SignupPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   // Host questionnaire
@@ -58,13 +59,7 @@ export default function SignupPage() {
   function handleAccountSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name || !email || !password) return
-    setStep(role === 'host' ? 'questionnaire' : 'interests')
-  }
-
-  function toggleInterest(tag: string) {
-    setSelectedInterests((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    )
+    setStep(role === 'host' ? 'questionnaire' : 'survey')
   }
 
   function toggleHostLane(lane: Lane) {
@@ -73,13 +68,12 @@ export default function SignupPage() {
     )
   }
 
-  function handleInterestsSubmit() {
-    if (selectedInterests.length < 4) return
+  function completeAttendeeSurvey(interests: string[]) {
     setLoading(true)
     setTimeout(() => {
-      login(email, password, { name, interests: selectedInterests, role: 'attendee' })
+      login(email, password, { name, interests, role: 'attendee' })
       router.push('/home')
-    }, 700)
+    }, 480)
   }
 
   const questionnaireComplete =
@@ -159,54 +153,14 @@ export default function SignupPage() {
     )
   }
 
-  if (step === 'interests') {
-    return (
-      <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-5 py-16">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-10">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-muted mb-4">Step 3 of 3</p>
-            <h1 className="font-serif text-3xl text-charcoal mb-2">What moves you?</h1>
-            <p className="text-sm text-muted max-w-xs mx-auto leading-relaxed">
-              Pick at least 4. We&apos;ll shape your weekly invitations around what you love.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mb-8 justify-center">
-            {INTEREST_TAGS.map((tag) => {
-              const selected = selectedInterests.includes(tag)
-              return (
-                <button
-                  key={tag}
-                  onClick={() => toggleInterest(tag)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-xs tracking-wide transition-all duration-200 active:scale-95 ${
-                    selected
-                      ? 'bg-charcoal text-cream border-charcoal'
-                      : 'bg-white text-charcoal-light border-border hover:border-sand'
-                  }`}
-                >
-                  {selected && <Check className="w-3 h-3" strokeWidth={2.5} />}
-                  {tag}
-                </button>
-              )
-            })}
-          </div>
-
-          <p className="text-center text-xs text-muted mb-6">
-            {selectedInterests.length} selected
-            {selectedInterests.length < 4 && ` — ${4 - selectedInterests.length} more to go`}
-          </p>
-
-          <button
-            onClick={handleInterestsSubmit}
-            disabled={selectedInterests.length < 4 || loading}
-            className="w-full bg-charcoal text-cream py-3.5 rounded-full text-sm tracking-wide hover:bg-charcoal/85 transition-all duration-200 disabled:opacity-30 active:scale-95"
-          >
-            {loading ? 'Creating your account…' : 'Enter Serendipity'}
-          </button>
-        </div>
-      </div>
-    )
-  }
+  if (step === 'survey') return (
+    <AttendeeOnboarding
+      name={name}
+      loading={loading}
+      onBack={() => setStep('account')}
+      onComplete={completeAttendeeSurvey}
+    />
+  )
 
   if (step === 'questionnaire') {
     return (
