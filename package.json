@@ -9,8 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@serendipity-hq/design": "github:Serendipity-HQ/Serendipity-Design",
-    "@serendipity-hq/ui": "github:Serendipity-HQ/Serendipity-UI",
+    "@serendipity-hq/design": "github:Serendipity-HQ/Serendipity-Design#agent/handmade-design-system",
+    "@serendipity-hq/ui": "github:Serendipity-HQ/Serendipity-UI#agent/handmade-invitation-components",
     "@supabase/supabase-js": "^2.110.2",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
