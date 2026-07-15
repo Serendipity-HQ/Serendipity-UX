@@ -1,5 +1,6 @@
 import { HOSTS as FALLBACK_HOSTS, EXPERIENCES as FALLBACK_EXPERIENCES } from './mock-data'
 import { createPublicServerClient, isSupabaseConfigured } from './supabase'
+import { fetchLiveEvents } from './live-events'
 import type { Experience, Host, Lane } from '@serendipity-hq/design'
 
 type ExperienceRow = Record<string, unknown>
@@ -106,36 +107,44 @@ function fallbackPayload(configured = false): EventPayload {
 }
 
 export async function listPublicEvents(): Promise<EventPayload> {
-  const supabase = createPublicServerClient()
   const configured = isSupabaseConfigured()
-  if (!supabase) return fallbackPayload(configured)
 
-  const { data, error } = await supabase
-    .from('experiences')
-    .select('*')
-    .eq('status', 'approved')
-    .order('featured', { ascending: false })
-    .order('start_time', { ascending: true, nullsFirst: false })
-    .order('serendipity_score', { ascending: false })
-    .limit(120)
+  // Master events feed (Serendipity-Events pipeline) is the primary source.
+  const live = await fetchLiveEvents()
 
-  if (error || !data?.length) {
+  // Supabase-approved experiences (host-created) layer on top of the feed.
+  const supabase = createPublicServerClient()
+  let curated: { experiences: Experience[]; hosts: Host[] } | null = null
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('experiences')
+      .select('*')
+      .eq('status', 'approved')
+      .order('featured', { ascending: false })
+      .order('start_time', { ascending: true, nullsFirst: false })
+      .order('serendipity_score', { ascending: false })
+      .limit(120)
+
     if (error) console.error(error)
-    return fallbackPayload(configured)
+    if (data?.length) {
+      curated = {
+        experiences: data.map(experienceFromRow),
+        hosts: Array.from(
+          new Map(data.map((row) => {
+            const host = hostFromRow(row)
+            return [host.id, host]
+          })).values()
+        ),
+      }
+    }
   }
 
-  const experiences = data.map(experienceFromRow)
-  const hosts = Array.from(
-    new Map(data.map((row) => {
-      const host = hostFromRow(row)
-      return [host.id, host]
-    })).values()
-  )
+  if (!live && !curated) return fallbackPayload(configured)
 
   return {
     configured,
     source: 'supabase',
-    experiences,
-    hosts,
+    experiences: [...(curated?.experiences ?? []), ...(live?.experiences ?? [])],
+    hosts: [...(curated?.hosts ?? []), ...(live?.hosts ?? [])],
   }
 }
