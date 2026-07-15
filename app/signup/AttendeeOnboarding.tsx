@@ -203,7 +203,7 @@ export default function AttendeeOnboarding({
                 <PartyPopper className="onboarding-party" size={22} />
                 <p className="onboarding-eyebrow">Your first week is taking shape</p>
                 <h1>Three ways in.</h1>
-                <p>We'll start with a familiar spark, a new direction, and one good surprise around {neighborhood || city || 'you'}.</p>
+                <p>We&apos;ll start with a familiar spark, a new direction, and one good surprise around {neighborhood || city || 'you'}.</p>
                 <div className="onboarding-invitations">
                   <Invitation type="PASSION" title={interests[0] || 'A familiar favorite'} copy="Something to deepen what already moves you." />
                   <Invitation type="GROWTH" title={intents[0] || 'A fresh beginning'} copy="One gentle nudge beyond the usual." />
