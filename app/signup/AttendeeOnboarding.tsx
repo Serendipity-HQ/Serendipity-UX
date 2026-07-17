@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Check, Clock3, MapPin, PartyPopper, Users } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Clock3, Users } from 'lucide-react'
 
 type SurveyStep = 'welcome' | 'place' | 'interests' | 'intent' | 'comfort' | 'availability' | 'reveal'
 
@@ -109,11 +109,11 @@ export default function AttendeeOnboarding({
 
   return (
     <div className="onboarding-shell min-h-[calc(100vh-56px)] px-4 py-5 sm:px-6 sm:py-8">
-      <div className="onboarding-frame mx-auto w-full max-w-5xl">
+      <div className="onboarding-frame mx-auto w-full max-w-3xl">
         <header className="onboarding-header">
-          <span className="onboarding-wordmark">SERENDIPITY</span>
+          <span className="onboarding-wordmark">First week setup</span>
           <div className="onboarding-progress" aria-label={`Onboarding progress: ${Math.round(progress)}% complete`}>
-            <span className="onboarding-progress-label">Your first week · {currentStep} of {STEPS.length}</span>
+            <span className="onboarding-progress-label">Step {currentStep} of {STEPS.length}</span>
             <span className="onboarding-progress-track"><span style={{ width: `${progress}%` }} /></span>
           </div>
         </header>
@@ -122,11 +122,10 @@ export default function AttendeeOnboarding({
           <div className="onboarding-paper" key={step}>
             {step === 'welcome' && (
               <div className="onboarding-welcome">
-                <div className="onboarding-orbit" aria-hidden="true"><span>+</span><span>*</span><span>+</span></div>
-                <p className="onboarding-eyebrow">A short field guide</p>
+                <p className="onboarding-eyebrow">A few quick questions</p>
                 <h1>Let&apos;s make this personal, {name.split(' ')[0] || 'friend'}.</h1>
                 <p>In a few small choices, we&apos;ll assemble a first week that feels like you. No personality test. No homework.</p>
-                <div className="onboarding-note"><MapPin size={17} /> We&apos;ll begin with where life is happening.</div>
+                <div className="onboarding-welcome-rule" aria-hidden="true" />
               </div>
             )}
 
@@ -163,9 +162,9 @@ export default function AttendeeOnboarding({
             {step === 'intent' && (
               <Question title="What kind of week do you want?" eyebrow="Choose up to two" prompt="This tells us what an invitation is meant to do for you right now.">
                 <div className="onboarding-choice-grid">
-                  {INTENTS.map(([title, detail], index) => (
+                  {INTENTS.map(([title, detail]) => (
                     <button key={title} type="button" onClick={() => toggle(setIntents, title, 2)} className={intents.includes(title) ? 'is-selected' : ''}>
-                      <span className="onboarding-choice-number">0{index + 1}</span><strong>{title}</strong><small>{detail}</small>
+                      <strong>{title}</strong><small>{detail}</small>
                       {intents.includes(title) && <Check className="onboarding-choice-check" size={17} />}
                     </button>
                   ))}
@@ -200,7 +199,6 @@ export default function AttendeeOnboarding({
 
             {step === 'reveal' && (
               <div className="onboarding-reveal">
-                <PartyPopper className="onboarding-party" size={22} />
                 <p className="onboarding-eyebrow">Your first week is taking shape</p>
                 <h1>Three ways in.</h1>
                 <p>We&apos;ll start with a familiar spark, a new direction, and one good surprise around {neighborhood || city || 'you'}.</p>
@@ -234,5 +232,5 @@ function OptionRow({ icon, label, options, value, onChange }: { icon?: React.Rea
 }
 
 function Invitation({ type, title, copy }: { type: string; title: string; copy: string }) {
-  return <article className={`onboarding-invitation onboarding-invitation--${type.toLowerCase()}`}><span>{type}</span><h2>{title}</h2><p>{copy}</p><i>- your invitation is on its way</i></article>
+  return <article className={`onboarding-invitation onboarding-invitation--${type.toLowerCase()}`}><span>{type}</span><h2>{title}</h2><p>{copy}</p></article>
 }
