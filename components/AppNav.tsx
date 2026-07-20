@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -7,7 +8,6 @@ import {
   CircleUserRound,
   Compass,
   House,
-  Leaf,
   Map,
   Sparkles,
 } from 'lucide-react'
@@ -35,12 +35,15 @@ export default function AppNav() {
     return (
       <header className="sticky top-0 z-50 border-b border-[#9f927c] bg-[#fff8e8]/95">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
-          <Link href="/" className="group flex items-center gap-2">
-            <Leaf
-              className="h-4 w-4 text-terracotta transition-transform duration-300 group-hover:rotate-12"
-              strokeWidth={1.8}
+          <Link href="/" className="block" aria-label="Serendipity home">
+            <Image
+              src="/serendipity-lettering.svg"
+              alt="Serendipity"
+              width={3375}
+              height={821}
+              className="h-auto w-[132px] sm:w-[145px]"
+              priority
             />
-            <span className="font-serif text-base tracking-wide text-charcoal">Serendipity</span>
           </Link>
           {!isLoggedIn && (
             <div className="flex items-center gap-5">
@@ -67,12 +70,15 @@ export default function AppNav() {
     <>
       <header className="sticky top-0 z-50 hidden border-b border-[#9f927c] bg-[#fff8e8]/95 md:block">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link href="/home" className="group flex items-center gap-2">
-            <Leaf
-              className="h-4 w-4 text-terracotta transition-transform duration-300 group-hover:rotate-12"
-              strokeWidth={1.8}
+          <Link href="/home" className="block" aria-label="Serendipity home">
+            <Image
+              src="/serendipity-lettering.svg"
+              alt="Serendipity"
+              width={3375}
+              height={821}
+              className="h-auto w-[132px] lg:w-[145px]"
+              priority
             />
-            <span className="font-serif text-base tracking-wide text-charcoal">Serendipity</span>
           </Link>
           <nav className="flex items-center gap-1" aria-label="Primary navigation">
             {navItems.map(({ href, label, icon: Icon, glyph }) => {
