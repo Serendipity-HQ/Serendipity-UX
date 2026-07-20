@@ -1,17 +1,17 @@
 # Invitation Entrance Design QA
 
 - Source visual truth: `.design-qa/entrance-modernization/03-modern-reference-open.png`
-- Implemented open state: `.design-qa/entrance-modernization/05-implementation-open-desktop.png`
-- Implemented closed state: `.design-qa/entrance-modernization/04-implementation-closed-desktop.png`
+- Implemented open state: `.design-qa/entrance-modernization/12-three-invite-open-desktop.png`
+- Implemented closed state: `.design-qa/entrance-modernization/11-three-invite-closed-desktop.png`
 - Full-view comparison: `.design-qa/entrance-modernization/08-reference-vs-implementation-open.jpg`
 - Before/after evidence: `.design-qa/entrance-modernization/10-before-vs-after-open.jpg`
-- Mobile evidence: `.design-qa/entrance-modernization/06-implementation-closed-mobile.png`, `.design-qa/entrance-modernization/07-implementation-open-mobile.png`
+- Mobile evidence: `.design-qa/entrance-modernization/13-three-invite-open-mobile.png`
 - Viewports: 1280px desktop; 390 × 844 mobile
-- State: authenticated test member; two high-confidence recommendations available from the current event feed
+- State: authenticated test member; one strict Growth match plus two Adventure matches from the current event feed
 
 ## Full-view comparison evidence
 
-The implemented screen reproduces the source's editorial dispatch structure: stamped greeting, city-post heading, cream paper ledger, one open action, and a single readable row for each recommendation. The supplied hand-lettered Serendipity SVG intentionally replaces the older leaf-plus-typeset mark. The recommendation feed returned two strong matches during QA, so the implementation truthfully uses two rows and a quality-held note rather than claiming three.
+The implemented screen reproduces the source's editorial dispatch structure: stamped greeting, city-post heading, cream paper ledger, one open action, and three readable recommendation rows. The supplied hand-lettered Serendipity SVG intentionally replaces the older leaf-plus-typeset mark. The trajectory engine preserves strict Passion and Growth quality gates, then fills an open slot with a distinct high-novelty Adventure so the weekly promise is always a complete three-card set when three active experiences are available.
 
 ## Focused-region comparison evidence
 
@@ -23,7 +23,7 @@ The open-state comparison keeps both 1280px captures side by side at readable sc
 - Spacing and layout rhythm: passed. The source's wide ledger, ruled rows, square photo crops, small-radius paper surface, and terracotta offset shadow are retained. Mobile reflows to 86px thumbnails and compact metadata without overflow.
 - Colors and visual tokens: passed. The shared paper green, cream, charcoal, terracotta, sage, and purple lane tokens are preserved. The former translucent shortage card was replaced by a legible paper note.
 - Image quality and asset fidelity: passed. Event images use their real feed URLs. The supplied `public/serendipity-lettering.svg` is used directly in the header; no logo approximation was created.
-- Copy and content: passed. The screen no longer promises three when fewer than three recommendations clear the algorithm's quality gates. Recommendation reasons remain visible in each opened row.
+- Copy and content: passed. The screen consistently presents three invitations. Adventure rationales explicitly explain how each choice moves beyond the member's ordinary patterns, while Passion and Growth keep their stricter meaning. Recommendation reasons remain visible in each opened row.
 
 ## Comparison history
 
@@ -38,8 +38,8 @@ The open-state comparison keeps both 1280px captures side by side at readable sc
 - Post-fix evidence: desktop capture 05 and mobile capture 07 show readable long-title behavior.
 
 - [P2] The page could say “three” while the algorithm returned two strong recommendations.
-- Fix: made all counts and grammar dynamic and added a legible quality-held explanation for missing lanes.
-- Post-fix evidence: captures 04–07 consistently state two invitations for the tested feed.
+- Fix: kept the strict lane matches, then added a novelty-ranked Adventure supplement for every open slot. Selection also avoids duplicate experiences and prefers different hosts, dates, and topics.
+- Post-fix evidence: captures 11–13 consistently show three invitations for the tested feed.
 
 - [P2] The header used the older leaf-plus-typeset brand mark.
 - Fix: replaced both public and authenticated desktop header marks with the supplied hand-lettered SVG.
@@ -49,10 +49,11 @@ The open-state comparison keeps both 1280px captures side by side at readable sc
 
 - The closed dispatch opens with one click and honors reduced-motion preferences.
 - Opened invitation rows navigate to their corresponding experience detail routes.
-- Dynamic counts support zero, one, two, three, or more recommendations without contradictory copy.
+- The weekly set contains three unique invitations whenever the active inventory contains three eligible future experiences.
+- Passion still requires active engagement; Growth still requires active cognitive depth; Adventure fills any open lane by prioritizing novelty relative to the member.
 - 390px mobile measurement: `scrollWidth` 390px, no horizontal overflow.
 - Browser console: no error-level entries; only development/HMR messages.
-- Lint and TypeScript checks pass.
+- Seven recommendation-engine tests, lint, TypeScript, and the production build pass.
 
 ## Findings
 

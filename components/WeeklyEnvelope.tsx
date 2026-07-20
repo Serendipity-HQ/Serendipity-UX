@@ -162,7 +162,7 @@ export default function WeeklyEnvelope({
           </div>
 
           <footer className="dispatch-footer">
-            <span>Selected for {items.length === 3 ? 'three different trajectories' : 'your strongest available paths'}.</span>
+            <span>Selected as {items.length === 3 ? 'three distinct ways beyond your routine' : 'your strongest available paths'}.</span>
             <span className="font-mono">SER · W{weekNumber}</span>
           </footer>
         </div>

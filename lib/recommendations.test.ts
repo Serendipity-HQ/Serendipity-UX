@@ -142,6 +142,76 @@ test('Surprise prefers an adjacent new direction over an arbitrary unrelated act
   assert.equal(surprise?.experience.id, 'foraging')
 })
 
+test('A weekly dispatch always has three unique invitations by filling open lanes with Adventure', () => {
+  const growth = experience(
+    'growth',
+    'The Examined Life',
+    'A Socratic seminar where six people debate identity, meaning, and the good life.',
+    ['Philosophy', 'Discussion', 'Seminar']
+  )
+  const dance = experience(
+    'dance',
+    'Beginner Tango Night',
+    'A participatory dance lesson where newcomers learn a short tango sequence together.',
+    ['Dance', 'Lesson', 'Participatory']
+  )
+  const astronomy = experience(
+    'astronomy',
+    'Rooftop Telescope Lab',
+    'A guided astronomy workshop using telescopes to identify planets and constellations.',
+    ['Astronomy', 'Workshop', 'Stargazing']
+  )
+  const pottery = experience(
+    'pottery',
+    'Clay Handbuilding Workshop',
+    'A hands-on workshop where you make and design a clay vessel.',
+    ['Pottery', 'Workshop', 'Craft']
+  )
+
+  const result = dispatch([growth, dance, astronomy, pottery], {
+    interests: ['Cooking'],
+    adventurousness: 80,
+  })
+
+  assert.equal(result.recommendations.length, 3)
+  assert.equal(new Set(result.recommendations.map((item) => item.experience.id)).size, 3)
+  assert.ok(result.recommendations.filter((item) => item.lane === 'surprise').length >= 2)
+  assert.ok(result.recommendations
+    .filter((item) => item.lane === 'surprise')
+    .every((item) => item.reason.startsWith('This is an adventure beyond your usual orbit:')))
+})
+
+test('Adventure supplements prioritize what is least ordinary for the member', () => {
+  const familiar = experience(
+    'familiar',
+    'Advanced Fermentation Workshop',
+    'A hands-on cooking workshop about fermentation technique and live cultures.',
+    ['Cooking', 'Workshop', 'Advanced']
+  )
+  const adjacent = experience(
+    'adjacent',
+    'Urban Foraging Field Lab',
+    'A participatory workshop identifying edible plants and mushrooms in the city.',
+    ['Foraging', 'Workshop', 'Plant Identification']
+  )
+  const unexpected = experience(
+    'unexpected',
+    'Rooftop Telescope Lab',
+    'A participatory rooftop stargazing night using telescopes to identify planets and constellations.',
+    ['Astronomy', 'Participatory', 'Stargazing']
+  )
+
+  const result = dispatch([familiar, adjacent, unexpected], {
+    interests: ['Cooking'],
+    adventurousness: 90,
+  })
+  const adventures = result.recommendations.filter((item) => item.lane === 'surprise')
+
+  assert.equal(result.recommendations.length, 3)
+  assert.ok(adventures.some((item) => item.experience.id === 'unexpected'))
+  assert.ok(adventures.every((item) => item.breakdown.noveltyFit >= 5))
+})
+
 test('Questionnaire direction and behavioral history are combined into one profile', () => {
   const saved = experience(
     'saved-pottery',

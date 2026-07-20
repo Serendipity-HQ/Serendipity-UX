@@ -115,7 +115,7 @@ export default function HomePage() {
         <WeeklyEnvelope items={invitationItems} city={city} weekKey={weekKey} />
       </Reveal>
 
-      {dispatch.shortages.length > 0 && invitationItems.length > 0 && (
+      {dispatch.shortages.length > 0 && invitationItems.length > 0 && invitationItems.length < 3 && (
         <Reveal>
           <aside className="dispatch-shortage" aria-label="Recommendation quality note">
             <StampMark tone="sage">quality held</StampMark>

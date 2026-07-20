@@ -134,6 +134,7 @@ type MatchContext = {
 }
 
 const LANES: Lane[] = ['passion', 'growth', 'surprise']
+const WEEKLY_INVITATION_COUNT = 3
 
 const TOPICS: Record<TopicKey, TopicDefinition> = {
   pottery: {
@@ -341,11 +342,12 @@ function topicScore(haystack: string, definition: TopicDefinition): number {
 }
 
 function inferFormat(haystack: string, active: number, passive: number, cognitive: number): string {
+  if (passive >= 6 && active < 4) return 'spectator event'
   if (haystack.includes(' workshop ')) return 'workshop'
   if (haystack.includes(' class ') || haystack.includes(' course ') || haystack.includes(' lesson ')) return 'class'
   if (haystack.includes(' seminar ') || haystack.includes(' discussion ') || haystack.includes(' debate ')) return 'discussion'
   if (haystack.includes(' open mic ') || haystack.includes(' jam session ')) return 'participatory session'
-  if (haystack.includes(' guided walk ') || haystack.includes(' tour ')) return 'guided experience'
+  if (haystack.includes(' guided walk ') || haystack.includes(' guided tour ') || haystack.includes(' walking tour ')) return 'guided experience'
   if (haystack.includes(' tasting ')) return 'guided tasting'
   if (active >= 6) return 'hands-on experience'
   if (cognitive >= 6) return 'learning experience'
@@ -773,9 +775,11 @@ function scoreCandidate(
     signals.push(`the ${semantics.format} requires active thought rather than passive watching`)
     if (semantics.cognitiveDepth >= 7) signals.push('it has strong learning or reflection value')
   } else {
-    if (match.bridgeFrom && topicLabel) signals.push(`it creates a bridge from ${match.bridgeFrom.label} into ${topicLabel}`)
+    if (match.directAffinity >= 0.5 && match.matchedPath) {
+      signals.push(`it approaches ${match.matchedPath.label} through a less familiar ${semantics.format}`)
+    } else if (match.bridgeFrom && topicLabel) signals.push(`it creates a bridge from ${match.bridgeFrom.label} into ${topicLabel}`)
     else if (topicLabel) signals.push(`${topicLabel} sits outside your usual orbit`)
-    signals.push(`its ${semantics.format} fits your appetite for discovery`)
+    signals.push(`its ${semantics.format} takes your week in an unfamiliar direction`)
   }
   if (goalMatches.length) signals.push('it supports what you said you want more of')
   if (breakdown.availabilityFit >= 7) signals.push('it fits the times you said work')
@@ -785,7 +789,7 @@ function scoreCandidate(
   const reasonLead: Record<Lane, string> = {
     passion: 'This advances your path:',
     growth: 'This is a meaningful stretch:',
-    surprise: 'This is a thoughtful departure:',
+    surprise: 'This is an adventure beyond your usual orbit:',
   }
 
   return {
@@ -849,6 +853,60 @@ function choosePortfolio(ranked: Map<Lane, Recommendation[]>): Recommendation[] 
   return best.sort((a, b) => LANES.indexOf(a.lane) - LANES.indexOf(b.lane))
 }
 
+function adventurePriority(recommendation: Recommendation): number {
+  const { breakdown } = recommendation
+  return breakdown.noveltyFit * 4 +
+    breakdown.adventureFit * 1.5 +
+    breakdown.engagementFit +
+    breakdown.qualityFit +
+    breakdown.availabilityFit * 0.5 +
+    breakdown.locationFit * 0.35
+}
+
+/**
+ * Passion and Growth keep their hard quality gates. If either lane cannot produce
+ * an honest match, Adventure owns the open slot and selects the strongest unused
+ * experience outside the member's ordinary patterns. This guarantees a complete
+ * three-invitation dispatch whenever the active inventory contains three options.
+ */
+function completeWithAdventures(
+  selected: Recommendation[],
+  candidates: Candidate[],
+  profile: RecommendationProfile,
+  paths: PathState[],
+  now: Date,
+  weekKey: string
+): Recommendation[] {
+  if (selected.length >= WEEKLY_INVITATION_COUNT) return selected.slice(0, WEEKLY_INVITATION_COUNT)
+
+  const usedIds = new Set(selected.map((recommendation) => recommendation.experience.id))
+  const adventures = candidates
+    .filter((candidate) => !usedIds.has(candidate.experience.id))
+    .map((candidate) => scoreCandidate(candidate, 'surprise', profile, paths, now, weekKey))
+    .sort((a, b) =>
+      adventurePriority(b) - adventurePriority(a) ||
+      b.breakdown.noveltyFit - a.breakdown.noveltyFit ||
+      b.score - a.score ||
+      a.experience.id.localeCompare(b.experience.id)
+    )
+
+  const completed = [...selected]
+  while (completed.length < WEEKLY_INVITATION_COUNT && adventures.length > 0) {
+    const usedHosts = new Set(completed.map((item) => item.experience.hostId))
+    const usedDates = new Set(completed.map((item) => item.experience.dateTime.slice(0, 10)))
+    const usedTopics = new Set(completed.map((item) => item.trajectory.interest).filter(Boolean))
+    const diverseIndex = adventures.findIndex((item) =>
+      !usedHosts.has(item.experience.hostId) &&
+      !usedDates.has(item.experience.dateTime.slice(0, 10)) &&
+      (!item.trajectory.interest || !usedTopics.has(item.trajectory.interest))
+    )
+    const [next] = adventures.splice(diverseIndex >= 0 ? diverseIndex : 0, 1)
+    completed.push(next)
+  }
+
+  return completed.sort((a, b) => LANES.indexOf(a.lane) - LANES.indexOf(b.lane))
+}
+
 /**
  * Serendipity Trajectory Engine
  *
@@ -886,7 +944,14 @@ export function createWeeklyRecommendations(
     ranked.set(lane, recommendations)
   }
 
-  const recommendations = choosePortfolio(ranked)
+  const recommendations = completeWithAdventures(
+    choosePortfolio(ranked),
+    candidates,
+    profile,
+    paths,
+    now,
+    weekKey
+  )
   const selectedLanes = new Set(recommendations.map((recommendation) => recommendation.lane))
   const shortages = LANES.filter((lane) => !selectedLanes.has(lane))
   return { recommendations, shortages, eligibleCount: candidates.length }
