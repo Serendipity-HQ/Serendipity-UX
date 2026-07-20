@@ -1,4 +1,5 @@
 import type { Experience, Host, Lane } from '@serendipity-hq/design'
+import { externalEventTags } from './experience-metadata'
 
 // Master events feed, refreshed by the Serendipity-Events ingestion pipeline.
 const EVENTS_URL =
@@ -34,11 +35,11 @@ function slugify(value: string) {
 }
 
 function toLane(ev: FeedEvent): Lane {
-  const seg = (ev.category || ev.segment || '').toLowerCase()
+  const seg = [ev.category, ev.segment, ev.genre, ev.title].filter(Boolean).join(' ').toLowerCase()
+  if (/workshop|class|lecture|seminar|discussion|course|training/.test(seg)) return 'growth'
   if (seg.includes('music') || seg.includes('arts') || seg.includes('theatre') || seg.includes('film')) {
     return 'passion'
   }
-  if (seg.includes('sport')) return 'growth'
   return 'surprise'
 }
 
@@ -63,7 +64,13 @@ function toExperience(ev: FeedEvent): Experience {
     spotsBooked: 0,
     imageSeed: slugify(ev.source_id),
     imageUrl: ev.image_url,
-    tags: [...new Set([ev.category, ev.genre, ev.segment, ...(ev.vibes ?? [])])]
+    tags: [...new Set([
+      ev.category,
+      ev.genre,
+      ev.segment,
+      ...(ev.vibes ?? []),
+      ...externalEventTags(ev.url, ev.price_min != null || ev.price_max != null),
+    ])]
       .filter((t): t is string => Boolean(t) && t !== 'Undefined'),
   }
 }
@@ -101,7 +108,7 @@ export async function fetchLiveEvents(): Promise<LiveEvents | null> {
     const upcoming = data.events.filter(
       (ev) =>
         ev.city === 'San Francisco' &&
-        ev.status !== 'cancelled' &&
+        !/cancelled|canceled|postponed|sold\s*out/i.test(`${ev.status} ${ev.title}`) &&
         (!ev.starts_at || new Date(ev.starts_at).getTime() > now),
     )
     if (!upcoming.length) return null

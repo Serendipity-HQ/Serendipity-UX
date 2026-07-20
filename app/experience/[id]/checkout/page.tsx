@@ -1,13 +1,14 @@
 'use client'
 
 import { use, useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle, CreditCard, Wallet, QrCode } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { PLATFORM_FEE_RATE } from '@/lib/constants'
 import { LaneBadge } from '@serendipity-hq/ui'
+import { externalUrlFor } from '@/lib/experience-metadata'
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleDateString('en-US', {
@@ -27,7 +28,7 @@ export default function CheckoutPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { user, isLoggedIn, bookings, bookExperience, experiences, hosts } = useApp()
+  const { user, isLoggedIn, bookings, bookExperience, experiences, hosts, eventsLoaded } = useApp()
   const router = useRouter()
 
   const [selectedPmId, setSelectedPmId] = useState<string>('')
@@ -39,17 +40,28 @@ export default function CheckoutPage({
     if (!isLoggedIn) router.push('/login')
   }, [isLoggedIn, router])
 
-  useEffect(() => {
-    if (user?.savedPaymentMethods.length) {
-      setSelectedPmId(user.savedPaymentMethods[0].id)
-    }
-  }, [user])
-
   const experience = experiences.find((e) => e.id === id)
-  if (!experience) return null
+  if (!experience && !eventsLoaded) {
+    return <div className="mx-auto max-w-xl px-4 py-16 text-sm text-muted">Preparing your invitation…</div>
+  }
+  if (!experience) notFound()
 
   const host = hosts.find((h) => h.id === experience.hostId)
   if (!host) return null
+  const externalUrl = externalUrlFor(experience)
+
+  if (externalUrl) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16">
+        <div className="liquid-card rounded-[28px] p-8 text-center">
+          <h1 className="font-serif text-3xl text-charcoal">Tickets are handled by the organizer</h1>
+          <p className="mt-3 text-sm leading-relaxed text-charcoal-light">We&apos;ll take you to the official ticket page for current availability, pricing, and terms.</p>
+          <a href={externalUrl} target="_blank" rel="noopener noreferrer" className="mt-7 block w-full rounded-full bg-terracotta py-3.5 text-center text-sm font-medium text-white">View official tickets</a>
+          <Link href={`/experience/${id}`} className="mt-4 inline-block text-sm text-muted hover:text-charcoal">Back to invitation</Link>
+        </div>
+      </div>
+    )
+  }
   const alreadyBooked = bookings.some(
     (b) => b.experienceId === id && b.status !== 'cancelled'
   )
@@ -70,12 +82,14 @@ export default function CheckoutPage({
   const priceCents = Math.round(experience.price * 100)
   const feeCents = Math.round(priceCents * PLATFORM_FEE_RATE)
   const totalCents = priceCents + feeCents
+  const isFree = totalCents === 0
   const hasEnoughFunds = user ? user.walletBalanceCents >= totalCents : false
+  const effectivePaymentMethodId = selectedPmId || user?.savedPaymentMethods[0]?.id || ''
 
   if (!user) return null
 
   function handleConfirm() {
-    if (!selectedPmId || !hasEnoughFunds) return
+    if ((!isFree && !effectivePaymentMethodId) || !hasEnoughFunds) return
     setConfirming(true)
     setTimeout(() => {
       const booking = bookExperience(id, priceCents)
@@ -198,7 +212,7 @@ export default function CheckoutPage({
       </div>
 
       {/* Payment method */}
-      <div className="liquid-card rounded-[28px] p-5 mb-6">
+      {!isFree && <div className="liquid-card rounded-[28px] p-5 mb-6">
         <h2 className="font-medium text-charcoal text-sm mb-4">Pay with wallet</h2>
 
         <div className="flex items-center gap-3 mb-4">
@@ -244,7 +258,7 @@ export default function CheckoutPage({
                   type="radio"
                   name="pm"
                   value={pm.id}
-                  checked={selectedPmId === pm.id}
+                  checked={effectivePaymentMethodId === pm.id}
                   onChange={() => setSelectedPmId(pm.id)}
                   className="accent-charcoal"
                 />
@@ -257,14 +271,21 @@ export default function CheckoutPage({
             ))}
           </div>
         )}
-      </div>
+      </div>}
+
+      {isFree && (
+        <div className="liquid-card rounded-[28px] p-5 mb-6">
+          <p className="text-sm font-medium text-charcoal">No payment method needed</p>
+          <p className="mt-1 text-sm text-muted">This invitation is free. Confirming reserves one spot.</p>
+        </div>
+      )}
 
       <button
         onClick={handleConfirm}
-        disabled={!hasEnoughFunds || confirming || !selectedPmId}
+        disabled={!hasEnoughFunds || confirming || (!isFree && !effectivePaymentMethodId)}
         className="w-full bg-terracotta text-white py-4 rounded-full font-medium text-base hover:bg-terracotta/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {confirming ? 'Confirming…' : `Confirm and pay $${formatCents(totalCents)}`}
+        {confirming ? 'Confirming…' : isFree ? 'Confirm reservation' : `Confirm and pay $${formatCents(totalCents)}`}
       </button>
       <p className="text-xs text-muted text-center mt-3">
         Free cancellation up to 48 hours before the experience

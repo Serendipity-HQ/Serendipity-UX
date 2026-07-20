@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Search } from 'lucide-react'
 import type { Lane } from '@serendipity-hq/design'
 import { useApp } from '@/context/AppContext'
-import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
+import ExperienceCard from '@/components/ExperienceCard'
 
 const LANES: { value: Lane | 'all'; label: string }[] = [
   { value: 'all',      label: 'All' },
@@ -20,8 +21,11 @@ export default function DiscoverPage() {
   const [query, setQuery]   = useState('')
   const [lane, setLane]     = useState<Lane | 'all'>('all')
   const [page, setPage]     = useState(1)
+  const [now] = useState(() => Date.now())
 
   const filtered = experiences.filter((e) => {
+    const startTime = new Date(e.dateTime).getTime()
+    const isBookable = Number.isFinite(startTime) && startTime > now && e.spotsBooked < e.spotsTotal
     const matchesLane = lane === 'all' || e.lane === lane
     const q = query.toLowerCase()
     const matchesQuery =
@@ -29,8 +33,8 @@ export default function DiscoverPage() {
       e.title.toLowerCase().includes(q) ||
       e.tags.some((t) => t.toLowerCase().includes(q)) ||
       hosts.find((h) => h.id === e.hostId)?.name.toLowerCase().includes(q)
-    return matchesLane && matchesQuery
-  })
+    return isBookable && matchesLane && matchesQuery
+  }).sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
 
   const paginated = filtered.slice(0, page * PAGE_SIZE)
   const hasMore   = paginated.length < filtered.length

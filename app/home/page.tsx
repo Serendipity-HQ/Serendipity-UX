@@ -7,7 +7,14 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import type { Experience, Host, Lane } from '@serendipity-hq/design'
-import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
+import ExperienceCard from '@/components/ExperienceCard'
+import { hasKnownPrice } from '@/lib/experience-metadata'
+import {
+  createWeeklyRecommendations,
+  recommendationProfileFromUser,
+  type Recommendation,
+} from '@/lib/recommendations'
 
 function getGreeting() {
   const h = new Date().getHours()
@@ -25,24 +32,6 @@ function getWeekKey(date = new Date()) {
   return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
 }
 
-function hashWeek(weekKey: string) {
-  return weekKey.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)
-}
-
-function getWeeklyInvitations(experiences: Experience[], userInterests: string[], weekKey: string) {
-  const lanes: Lane[] = ['passion', 'growth', 'surprise']
-  const weekOffset = hashWeek(weekKey)
-  return lanes.flatMap((lane, laneIndex) => {
-    const laneExps = experiences.filter((e) => e.lane === lane)
-    if (!laneExps.length) return []
-    const preferred = laneExps.filter((e) =>
-      e.tags.some((t) => userInterests.includes(t))
-    )
-    const pool = preferred.length > 0 ? preferred : laneExps
-    return pool[(weekOffset + laneIndex) % pool.length]
-  })
-}
-
 const LANE_DESCRIPTIONS: Record<Lane, string> = {
   passion: 'Deepen a skill',
   growth:  'Expand your mind',
@@ -54,7 +43,7 @@ function RecommendationRevealStack({
   revealedCount,
   onReveal,
 }: {
-  items: { exp: Experience; host: Host }[]
+  items: { exp: Experience; host: Host; recommendation: Recommendation }[]
   revealedCount: number
   onReveal: () => void
 }) {
@@ -86,7 +75,7 @@ function RecommendationRevealStack({
           className="group relative block h-[520px] w-full max-w-[430px] mx-auto text-left focus:outline-none"
           aria-label={`Reveal ${current.exp.title}`}
         >
-          {remaining.slice(0, 3).map(({ exp, host }, index) => {
+          {remaining.slice(0, 3).map(({ exp, host, recommendation }, index) => {
             const isTop = index === 0
             const rotation = index === 1 ? '-rotate-6' : index === 2 ? 'rotate-6' : ''
             const offset = index * 18
@@ -101,7 +90,7 @@ function RecommendationRevealStack({
                 }}
               >
                 <Image
-                  src={`https://picsum.photos/seed/${exp.imageSeed}/800/1000`}
+                  src={exp.imageUrl || `https://picsum.photos/seed/${exp.imageSeed}/800/1000`}
                   alt=""
                   fill
                   className="object-cover"
@@ -112,7 +101,7 @@ function RecommendationRevealStack({
                 <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-7">
                   <div>
                     <div className="mb-5">
-                      <LaneBadge lane={exp.lane} />
+                      <LaneBadge lane={recommendation.lane} />
                     </div>
                     <h3 className="max-w-[12ch] text-4xl md:text-5xl font-black uppercase leading-[0.92] text-white">
                       {exp.title}
@@ -125,7 +114,9 @@ function RecommendationRevealStack({
                       </p>
                       <p className="text-sm font-semibold text-white">{host.name}</p>
                     </div>
-                    <p className="text-4xl font-black">${exp.price}</p>
+                    <p className={`${hasKnownPrice(exp) ? 'text-4xl font-black' : 'max-w-24 text-right text-xs font-bold uppercase tracking-wider'}`}>
+                      {hasKnownPrice(exp) ? (exp.price === 0 ? 'Free' : `$${exp.price}`) : 'See ticket site'}
+                    </p>
                   </div>
                 </div>
                 {isTop && (
@@ -152,17 +143,22 @@ export default function HomePage() {
   const weekKey = useMemo(() => getWeekKey(), [])
   const [revealedCount, setRevealedCount] = useState(3)
   const [isRevealHydrated, setIsRevealHydrated] = useState(false)
-  const invitations = useMemo(
-    () => getWeeklyInvitations(experiences, user?.interests ?? [], weekKey),
-    [experiences, user?.interests, weekKey]
+  const dispatch = useMemo(
+    () => createWeeklyRecommendations(
+      experiences,
+      recommendationProfileFromUser(user),
+      { weekKey }
+    ),
+    [experiences, user, weekKey]
   )
   const invitationItems = useMemo(
-    () => invitations.flatMap((exp) => {
+    () => dispatch.recommendations.flatMap((recommendation) => {
+      const exp = recommendation.experience
       const host = hosts.find((h) => h.id === exp.hostId)
       if (!host) return []
-      return { exp, host }
+      return { exp, host, recommendation }
     }),
-    [hosts, invitations]
+    [dispatch.recommendations, hosts]
   )
   const revealStorageKey = user ? `serendipity_weekly_reveals_v3_${user.id}_${weekKey}` : ''
   const today = new Date().toLocaleDateString('en-US', {
@@ -225,20 +221,37 @@ export default function HomePage() {
       {/* Three lane invitations */}
       {isRevealHydrated && revealedCount >= invitationItems.length && (
         <div className="space-y-10">
-          {invitationItems.map(({ exp, host }, i) => {
+          {invitationItems.map(({ exp, host, recommendation }, i) => {
             return (
               <Reveal key={exp.id} delay={i * 100}>
                 <div className="flex items-center gap-3 mb-4">
-                  <LaneBadge lane={exp.lane} />
+                  <LaneBadge lane={recommendation.lane} />
                   <span className="text-[10px] tracking-widest uppercase text-muted">
-                    {LANE_DESCRIPTIONS[exp.lane]}
+                    {LANE_DESCRIPTIONS[recommendation.lane]}
                   </span>
                 </div>
+                <p className="mb-4 max-w-xl text-sm leading-relaxed text-charcoal-light">
+                  {recommendation.reason}
+                </p>
                 <ExperienceCard experience={exp} host={host} variant="featured" />
               </Reveal>
             )
           })}
         </div>
+      )}
+
+      {isRevealHydrated && dispatch.shortages.length > 0 && (
+        <Reveal>
+          <div className="mt-10 rounded-2xl border border-white/16 bg-white/8 p-5">
+            <p className="text-sm leading-relaxed text-charcoal-light">
+              We found {invitationItems.length} strong match{invitationItems.length === 1 ? '' : 'es'} this week.{' '}
+              We&apos;re holding the rest rather than filling your dispatch with weak recommendations.
+            </p>
+            <Link href="/discover" className="mt-3 inline-flex text-xs tracking-widest uppercase text-[#F8E1C5] link-underline">
+              Explore all available experiences
+            </Link>
+          </div>
+        </Reveal>
       )}
 
       {/* Footer nudge */}

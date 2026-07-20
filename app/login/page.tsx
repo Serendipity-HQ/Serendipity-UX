@@ -12,15 +12,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email || !password) return
     setLoading(true)
-    setTimeout(() => {
-      login(email, password)
-      router.push('/home')
-    }, 600)
+    setError('')
+    const result = await login(email, password)
+    if (!result.success) {
+      setLoading(false)
+      setError(result.error ?? 'We could not sign you in. Check your details and try again.')
+      return
+    }
+    router.push('/home')
   }
 
   return (
@@ -72,6 +77,11 @@ export default function LoginPage() {
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
+          {error && (
+            <p className="text-sm leading-relaxed text-terracotta" role="alert">
+              {error}
+            </p>
+          )}
         </form>
 
         <p className="text-center text-xs text-muted mt-8">

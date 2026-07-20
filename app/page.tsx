@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Compass, Mail } from 'lucide-react'
-import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
+import ExperienceCard from '@/components/ExperienceCard'
 import { EXPERIENCES, HOSTS } from '@/lib/mock-data'
 
 const FEATURED_IDS = ['e1', 'e4', 'e7']
