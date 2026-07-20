@@ -80,7 +80,7 @@ const HOSTING_BACKGROUNDS = [
 ]
 
 const inputClass =
-  'w-full rounded-xl border border-white/16 bg-white/8 px-4 py-3 text-sm text-charcoal placeholder:text-muted/60 focus:border-white/50 focus:outline-none'
+  'field-input'
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -236,25 +236,25 @@ export default function SignupPage() {
   )
 
   return (
-    <div className="min-h-[calc(100vh-56px)] px-4 py-5 sm:px-6 sm:py-8">
-      <div className="mx-auto flex min-h-[calc(100vh-96px)] w-full max-w-5xl flex-col rounded-[28px] border border-white/12 bg-white/5 p-4 shadow-2xl shadow-black/10 sm:p-7">
-        <header className="flex items-center justify-between gap-6 border-b border-white/12 pb-4">
-          <Link href="/" className="font-serif text-sm tracking-[0.18em] text-charcoal">SERENDIPITY</Link>
+    <div className="min-h-[calc(100vh-56px)] px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto flex min-h-[calc(100vh-112px)] w-full max-w-6xl flex-col">
+        <header className="flex items-center justify-between gap-6 border-y border-[#b8aa91] py-3">
+          <Link href="/" className="font-serif text-sm tracking-[0.08em] text-charcoal">Serendipity field guide</Link>
           <div className="w-full max-w-xs">
-            <div className="mb-2 flex justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
+            <div className="mb-2 flex justify-between text-[9px] font-bold uppercase tracking-[0.16em] text-muted">
               <span>{step === 'account' ? (role === 'host' ? 'New host' : 'New member') : 'Your first week'}</span>
               {step !== 'account' && <span>{currentStep} of {ATTENDEE_STEPS.length}</span>}
             </div>
-            <div className="h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-terracotta transition-all" style={{ width: `${progress}%` }} /></div>
+            <div className="h-[3px] overflow-hidden bg-[#d2c7b4]"><div className="h-full bg-terracotta transition-all" style={{ width: `${progress}%` }} /></div>
           </div>
         </header>
 
         <main className="flex flex-1 items-center justify-center py-8 sm:py-12" aria-live="polite">
-          <div className="w-full max-w-3xl">
+          <div className="entry-sheet w-full max-w-4xl">
             {step === 'account' && (
-              <form className="mx-auto max-w-md" onSubmit={submitAccount}>
+              <form className="mx-auto max-w-lg" onSubmit={submitAccount}>
                 <Eyebrow><Sparkles size={14} /> {role === 'host' ? 'YOUR HOST PROFILE' : 'YOUR FIRST WEEK'}</Eyebrow>
-                <h1 className="mb-3 font-serif text-4xl text-charcoal">Your story starts here.</h1>
+                <h1 className="mb-3 font-serif text-4xl leading-tight text-charcoal sm:text-5xl">Your story starts here.</h1>
                 <p className="mb-8 text-sm leading-relaxed text-muted">Create your account, then answer a few bright questions so Serendipity can make every invitation count.</p>
                 <div className="space-y-4">
                   <Field label="Full name"><input className={inputClass} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" required /></Field>
@@ -268,7 +268,7 @@ export default function SignupPage() {
 
             {step === 'welcome' && (
               <div className="mx-auto max-w-xl text-center">
-                <div className="mx-auto mb-7 flex h-20 w-20 items-center justify-center rounded-full border border-terracotta/30 bg-terracotta/10 text-terracotta"><Compass size={30} strokeWidth={1.4} /></div>
+                <Compass className="mx-auto mb-6 text-terracotta" size={34} strokeWidth={1.4} />
                 <Eyebrow center>A SHORT FIELD GUIDE</Eyebrow>
                 <h1 className="mb-4 font-serif text-4xl text-charcoal sm:text-5xl">Let&apos;s make this personal, {name.split(' ')[0] || 'friend'}.</h1>
                 <p className="mx-auto max-w-lg text-base leading-relaxed text-muted">In a few small choices, we&apos;ll assemble invitations that deepen what you love, stretch your mind, and leave a little room for the unexpected.</p>
@@ -296,14 +296,14 @@ export default function SignupPage() {
               <Question eyebrow="CHOOSE UP TO TWO" title="What do you want more of?" prompt="Your interests tell us where to look. Your intent tells us what a good invitation should do for you now.">
                 <div className="grid gap-3 sm:grid-cols-2">{INTENTS.map(([title, detail], index) => {
                   const selected = profile.intents.includes(title)
-                  return <button key={title} type="button" aria-pressed={selected} onClick={() => toggleProfileList('intents', title, 2)} className={`relative min-h-32 rounded-2xl border p-5 text-left transition ${selected ? 'border-terracotta bg-terracotta/12' : 'border-white/14 bg-white/6 hover:border-white/35'}`}><span className="text-[10px] tracking-widest text-muted">0{index + 1}</span><strong className="mt-3 block font-serif text-xl font-normal text-charcoal">{title}</strong><small className="mt-1 block leading-relaxed text-muted">{detail}</small>{selected && <Check className="absolute right-4 top-4 text-terracotta" size={17} />}</button>
+                  return <button key={title} type="button" aria-pressed={selected} onClick={() => toggleProfileList('intents', title, 2)} className={`invitation-card card-lift relative min-h-32 p-5 text-left transition ${selected ? 'border-terracotta shadow-[4px_4px_0_#d6624b]' : ''}`}><span className="text-[10px] font-bold tracking-widest text-muted">0{index + 1}</span><strong className="mt-3 block font-serif text-xl font-normal text-charcoal">{title}</strong><small className="mt-1 block leading-relaxed text-muted">{detail}</small>{selected && <Check className="absolute right-4 top-4 text-terracotta" size={17} />}</button>
                 })}</div>
               </Question>
             )}
 
             {step === 'comfort' && (
               <Question eyebrow="SET THE DIAL" title="What feels inviting?" prompt="We want to stretch your world without ignoring your boundaries.">
-                <div className="rounded-2xl border border-white/14 bg-white/6 p-5">
+                <div className="border border-[#b8aa91] bg-[#fffaf0] p-5 shadow-[3px_3px_0_#d2c7b4]">
                   <div className="mb-4 flex items-center justify-between"><span className="text-xs text-muted">Familiar</span><strong className="font-serif text-lg font-normal text-charcoal">How adventurous?</strong><span className="text-xs text-muted">Unknown</span></div>
                   <input className="w-full accent-terracotta" aria-label="Adventurousness" type="range" min="0" max="100" value={profile.adventurousness} onChange={(event) => patchProfile({ adventurousness: Number(event.target.value) })} />
                   <p className="mt-3 text-center text-xs text-muted">{profile.adventurousness < 35 ? 'Keep most invitations close to what I know.' : profile.adventurousness > 70 ? 'Send me somewhere genuinely unexpected.' : 'A familiar foothold with room to explore.'}</p>
@@ -317,7 +317,7 @@ export default function SignupPage() {
               <Question eyebrow="MAKE IT ACTIONABLE" title="When can you actually go?" prompt="Choose every window that usually has room for a good idea.">
                 <div className="grid gap-3 sm:grid-cols-2">{AVAILABILITY.map((time) => {
                   const selected = profile.availability.includes(time)
-                  return <button type="button" key={time} aria-pressed={selected} className={`flex items-center gap-3 rounded-xl border px-4 py-4 text-sm transition ${selected ? 'border-terracotta bg-terracotta/12 text-charcoal' : 'border-white/14 bg-white/6 text-muted hover:border-white/35'}`} onClick={() => toggleProfileList('availability', time)}><Clock3 size={17} /><span className="flex-1 text-left">{time}</span>{selected && <Check size={17} className="text-terracotta" />}</button>
+                  return <button type="button" key={time} aria-pressed={selected} className={`flex min-h-12 items-center gap-3 border px-4 py-4 text-sm transition ${selected ? 'border-charcoal bg-charcoal text-cream shadow-[3px_3px_0_#d6624b]' : 'border-[#b8aa91] bg-[#fffaf0] text-charcoal-light hover:border-charcoal'}`} onClick={() => toggleProfileList('availability', time)}><Clock3 size={17} /><span className="flex-1 text-left">{time}</span>{selected && <Check size={17} className="text-amber" />}</button>
                 })}</div>
                 <OptionRow label="Planning style" options={PLANNING_STYLES} value={profile.planningStyle} onChange={(value) => patchProfile({ planningStyle: value as PlanningStyle })} />
                 <div><p className="mb-3 text-[10px] uppercase tracking-widest text-muted">Access needs (optional)</p><div className="flex flex-wrap gap-2">{ACCESSIBILITY_NEEDS.map((need) => <ChoicePill key={need} selected={profile.accessibilityNeeds.includes(need)} onClick={() => toggleProfileList('accessibilityNeeds', need)}>{need}</ChoicePill>)}</div></div>
@@ -341,11 +341,11 @@ export default function SignupPage() {
         </main>
 
         {step !== 'account' && (
-          <footer className="flex items-center justify-between border-t border-white/12 pt-4">
-            <button type="button" onClick={back} className="flex items-center gap-2 px-2 py-3 text-xs text-muted hover:text-charcoal"><ArrowLeft size={16} /> Back</button>
+          <footer className="flex items-center justify-between border-t border-[#b8aa91] pt-5">
+            <button type="button" onClick={back} className="flex min-h-11 items-center gap-2 px-2 py-3 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-charcoal"><ArrowLeft size={16} /> Back</button>
             {step === 'reveal'
-              ? <button type="button" onClick={finishAttendee} disabled={submitting} className="flex items-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-cream transition hover:bg-charcoal/85 disabled:opacity-40">{submitting ? 'Opening your week…' : 'Open my first week'} <ArrowRight size={16} /></button>
-              : <button type="button" onClick={next} disabled={!canContinue} className="flex items-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-cream transition hover:bg-charcoal/85 disabled:opacity-30">{step === 'welcome' ? 'Let’s begin' : 'Continue'} <ArrowRight size={16} /></button>}
+              ? <button type="button" onClick={finishAttendee} disabled={submitting} className="paper-button">{submitting ? 'Opening your week…' : 'Open my first week'} <ArrowRight size={16} /></button>
+              : <button type="button" onClick={next} disabled={!canContinue} className="paper-button">{step === 'welcome' ? 'Let’s begin' : 'Continue'} <ArrowRight size={16} /></button>}
           </footer>
         )}
         {authMessage && (
@@ -359,11 +359,11 @@ export default function SignupPage() {
 }
 
 function RoleChoice({ onChoose }: { onChoose: (role: UserRole) => void }) {
-  return <div className="flex min-h-[calc(100vh-56px)] items-center justify-center px-5 py-16"><div className="w-full max-w-md"><div className="mb-10 text-center"><Leaf className="mx-auto mb-5 text-terracotta" size={22} strokeWidth={1.5} /><p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-muted">Begin here</p><h1 className="mb-2 font-serif text-4xl text-charcoal">How will you show up?</h1><p className="text-sm text-muted">You can always do both. Start with one.</p></div><div className="space-y-4"><RoleButton icon={<Compass size={18} />} title="Find experiences" copy="Receive thoughtful Passion, Growth, and Surprise invitations shaped around your real life." onClick={() => onChoose('attendee')} /><RoleButton icon={<Sparkles size={18} />} title="Host experiences" copy="Bring people together around your craft and find the people who will value it most." onClick={() => onChoose('host')} /></div><p className="mt-8 text-center text-xs text-muted">Already a member? <Link href="/login" className="text-charcoal underline underline-offset-4">Sign in</Link></p></div></div>
+  return <div className="min-h-[calc(100vh-56px)] px-5 py-6 md:py-16"><div className="mx-auto max-w-5xl"><div className="mb-8 flex items-center justify-between border-y border-[#b8aa91] py-3 text-[9px] font-bold uppercase tracking-[0.16em] text-muted md:mb-10"><span>New member edition</span><span>Begin here</span></div><div className="grid items-center gap-7 md:grid-cols-[minmax(0,1fr)_minmax(380px,0.85fr)] md:gap-16"><section><p className="editorial-kicker mb-5 text-[10px] uppercase tracking-[0.2em]">Choose your way in</p><h1 className="font-serif text-[clamp(2.8rem,12vw,5.8rem)] leading-[0.94] text-charcoal">How will you show up?</h1><div className="mt-8 hidden max-w-md border-l-2 border-terracotta pl-5 sm:block"><p className="font-serif text-xl leading-snug text-charcoal">You can always do both. Start with one.</p><p className="mt-3 text-sm leading-relaxed text-charcoal-light">Join as a guest looking for a fuller week, or as a host with something worth sharing.</p></div></section><section className="entry-sheet"><div className="mb-6 flex items-center gap-2 border-b border-[#b8aa91] pb-4 text-terracotta"><Leaf size={17} strokeWidth={1.6} aria-hidden="true" /><span className="text-[9px] font-bold uppercase tracking-[0.18em]">Serendipity registry</span></div><div className="space-y-4"><RoleButton icon={<Compass size={18} />} title="Find experiences" copy="Receive thoughtful Passion, Growth, and Surprise invitations shaped around your real life." onClick={() => onChoose('attendee')} /><RoleButton icon={<Sparkles size={18} />} title="Host experiences" copy="Bring people together around your craft and find the people who will value it most." onClick={() => onChoose('host')} /></div><p className="mt-7 border-t border-[#d2c7b4] pt-5 text-center text-xs text-muted">Already a member? <Link href="/login" className="font-bold text-charcoal link-underline">Sign in</Link></p></section></div></div></div>
 }
 
 function RoleButton({ icon, title, copy, onClick }: { icon: React.ReactNode; title: string; copy: string; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className="w-full rounded-[22px] border border-white/16 bg-white/8 p-6 text-left transition hover:border-white/45 active:scale-[0.99]"><span className="mb-3 flex items-center gap-3 text-terracotta">{icon}<strong className="text-xs uppercase tracking-widest text-charcoal">{title}</strong></span><span className="block text-sm leading-relaxed text-muted">{copy}</span></button>
+  return <button type="button" onClick={onClick} className="invitation-card card-lift w-full p-5 text-left transition active:translate-x-0.5 active:translate-y-0.5"><span className="mb-3 flex items-center gap-3 text-terracotta">{icon}<strong className="text-[10px] uppercase tracking-[0.14em] text-charcoal">{title}</strong></span><span className="block text-sm leading-relaxed text-charcoal-light">{copy}</span></button>
 }
 
 function Question({ title, eyebrow, prompt, children }: { title: string; eyebrow: string; prompt: string; children: React.ReactNode }) {
@@ -371,19 +371,19 @@ function Question({ title, eyebrow, prompt, children }: { title: string; eyebrow
 }
 
 function Eyebrow({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
-  return <p className={`mb-4 flex items-center gap-2 text-[10px] font-medium tracking-[0.18em] text-terracotta ${center ? 'justify-center' : ''}`}>{children}</p>
+  return <p className={`editorial-kicker mb-4 flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] ${center ? 'justify-center' : ''}`}>{children}</p>
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block text-[10px] uppercase tracking-widest text-muted">{label}<span className="mt-2 block normal-case tracking-normal">{children}</span></label>
+  return <label className="block text-[9px] font-bold uppercase tracking-[0.15em] text-muted">{label}<span className="mt-2 block normal-case tracking-normal">{children}</span></label>
 }
 
 function PrimaryButton({ children, type }: { children: React.ReactNode; type: 'button' | 'submit' }) {
-  return <button type={type} className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-charcoal py-3.5 text-sm text-cream transition hover:bg-charcoal/85">{children}</button>
+  return <button type={type} className="paper-button mt-7 w-full">{children}</button>
 }
 
 function ChoicePill({ children, selected, onClick }: { children: React.ReactNode; selected: boolean; onClick: () => void }) {
-  return <button type="button" aria-pressed={selected} onClick={onClick} className={`flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-xs transition ${selected ? 'border-charcoal bg-charcoal text-cream' : 'border-white/18 bg-white/8 text-charcoal-light hover:border-white/40'}`}>{selected && <Check size={13} />}{children}</button>
+  return <button type="button" aria-pressed={selected} onClick={onClick} className={`interest-chip min-h-11 ${selected ? 'is-selected' : ''}`}>{selected && <Check size={13} />}{children}</button>
 }
 
 function OptionRow({ icon, label, options, value, onChange }: { icon?: React.ReactNode; label: string; options: readonly string[]; value: string; onChange: (value: string) => void }) {
@@ -392,7 +392,7 @@ function OptionRow({ icon, label, options, value, onChange }: { icon?: React.Rea
 
 function Invitation({ lane, title, copy }: { lane: string; title: string; copy: string }) {
   const accent = lane === 'PASSION' ? 'text-terracotta' : lane === 'GROWTH' ? 'text-teal' : 'text-cobalt'
-  return <article className="rounded-2xl border border-white/14 bg-white/7 p-5"><span className={`text-[10px] tracking-[0.18em] ${accent}`}>{lane}</span><h2 className="my-3 font-serif text-xl text-charcoal">{title}</h2><p className="text-xs leading-relaxed text-muted">{copy}</p></article>
+  return <article className="invitation-card p-5"><span className={`text-[10px] font-bold tracking-[0.18em] ${accent}`}>{lane}</span><h2 className="my-3 font-serif text-xl text-charcoal">{title}</h2><p className="text-xs leading-relaxed text-charcoal-light">{copy}</p></article>
 }
 
 type HostValues = { venueName: string; neighborhood: string; craft: string; motivation: string; hostLanes: Lane[]; groupSize: string; hostingBackground: string }
@@ -400,5 +400,5 @@ type HostSetters = { setVenueName: (value: string) => void; setNeighborhood: (va
 
 function HostQuestionnaire({ values, setters, submitting, authMessage, onBack, onSubmit }: { values: HostValues; setters: HostSetters; submitting: boolean; authMessage: string; onBack: () => void; onSubmit: (event: React.FormEvent) => void }) {
   const complete = values.venueName.trim() && values.craft.trim() && values.motivation.trim() && values.hostLanes.length > 0
-  return <div className="min-h-[calc(100vh-56px)] px-5 py-12"><div className="mx-auto max-w-xl"><Eyebrow><Sparkles size={14} /> HOST FIELD GUIDE</Eyebrow><h1 className="mb-3 font-serif text-4xl text-charcoal">Tell us how you host.</h1><p className="mb-8 text-sm leading-relaxed text-muted">This shapes your profile and helps each experience reach people who will value it.</p><form onSubmit={onSubmit} className="space-y-5"><Field label="Where do you host?"><input className={inputClass} value={values.venueName} onChange={(event) => setters.setVenueName(event.target.value)} placeholder="Your studio, kitchen, rooftop…" required /></Field><Field label="Neighborhood (optional)"><input className={inputClass} value={values.neighborhood} onChange={(event) => setters.setNeighborhood(event.target.value)} placeholder="Mission, Sunset, North Beach…" /></Field><Field label="What will you host?"><textarea className={`${inputClass} min-h-24 resize-none`} value={values.craft} onChange={(event) => setters.setCraft(event.target.value)} placeholder="Wheel-throwing, supper clubs, rooftop stargazing…" required /></Field><Field label="What should guests walk away with?"><textarea className={`${inputClass} min-h-24 resize-none`} value={values.motivation} onChange={(event) => setters.setMotivation(event.target.value)} placeholder="A skill, a memory, a new perspective…" required /></Field><div><p className="mb-3 text-[10px] uppercase tracking-widest text-muted">Which lanes fit?</p><div className="flex flex-wrap gap-2">{LANES.map((lane) => <ChoicePill key={lane} selected={values.hostLanes.includes(lane)} onClick={() => setters.toggleHostLane(lane)}>{LANE_LABELS[lane]}</ChoicePill>)}</div></div><OptionRow label="Typical group size" options={GROUP_SIZES} value={values.groupSize} onChange={setters.setGroupSize} /><OptionRow label="Hosting background" options={HOSTING_BACKGROUNDS} value={values.hostingBackground} onChange={setters.setHostingBackground} /><button type="submit" disabled={!complete || submitting} className="flex w-full items-center justify-center gap-2 rounded-full bg-charcoal py-3.5 text-sm text-cream disabled:opacity-30">{submitting ? 'Creating your studio…' : 'Open your host studio'} <ArrowRight size={16} /></button>{authMessage && <p className="text-center text-sm text-terracotta" role="status" aria-live="polite">{authMessage}</p>}</form><button type="button" onClick={onBack} className="mx-auto mt-6 flex items-center gap-2 text-xs text-muted"><ArrowLeft size={15} /> Back</button></div></div>
+  return <div className="min-h-[calc(100vh-56px)] px-5 py-10 md:py-14"><div className="mx-auto max-w-3xl"><div className="mb-8 flex items-center justify-between border-y border-[#b8aa91] py-3 text-[9px] font-bold uppercase tracking-[0.16em] text-muted"><span>Host registry</span><span>Field guide</span></div><section className="entry-sheet"><Eyebrow><Sparkles size={14} /> HOST FIELD GUIDE</Eyebrow><h1 className="mb-3 font-serif text-4xl text-charcoal sm:text-5xl">Tell us how you host.</h1><p className="mb-8 text-sm leading-relaxed text-muted">This shapes your profile and helps each experience reach people who will value it.</p><form onSubmit={onSubmit} className="space-y-5"><Field label="Where do you host?"><input className={inputClass} value={values.venueName} onChange={(event) => setters.setVenueName(event.target.value)} placeholder="Your studio, kitchen, rooftop…" required /></Field><Field label="Neighborhood (optional)"><input className={inputClass} value={values.neighborhood} onChange={(event) => setters.setNeighborhood(event.target.value)} placeholder="Mission, Sunset, North Beach…" /></Field><Field label="What will you host?"><textarea className={`${inputClass} min-h-24 resize-none`} value={values.craft} onChange={(event) => setters.setCraft(event.target.value)} placeholder="Wheel-throwing, supper clubs, rooftop stargazing…" required /></Field><Field label="What should guests walk away with?"><textarea className={`${inputClass} min-h-24 resize-none`} value={values.motivation} onChange={(event) => setters.setMotivation(event.target.value)} placeholder="A skill, a memory, a new perspective…" required /></Field><div><p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">Which lanes fit?</p><div className="flex flex-wrap gap-2">{LANES.map((lane) => <ChoicePill key={lane} selected={values.hostLanes.includes(lane)} onClick={() => setters.toggleHostLane(lane)}>{LANE_LABELS[lane]}</ChoicePill>)}</div></div><OptionRow label="Typical group size" options={GROUP_SIZES} value={values.groupSize} onChange={setters.setGroupSize} /><OptionRow label="Hosting background" options={HOSTING_BACKGROUNDS} value={values.hostingBackground} onChange={setters.setHostingBackground} /><button type="submit" disabled={!complete || submitting} className="paper-button w-full">{submitting ? 'Creating your studio…' : 'Open your host studio'} <ArrowRight size={16} /></button>{authMessage && <p className="border-l-2 border-terracotta bg-[#f7e5dc] px-3 py-2 text-sm text-[#8f392d]" role="status" aria-live="polite">{authMessage}</p>}</form><button type="button" onClick={onBack} className="mx-auto mt-7 flex min-h-11 items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted"><ArrowLeft size={15} /> Back</button></section></div></div>
 }
