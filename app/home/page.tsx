@@ -138,7 +138,14 @@ function RecommendationRevealStack({
 }
 
 export default function HomePage() {
-  const { user, isLoggedIn, experiences, hosts } = useApp()
+  const {
+    user,
+    isLoggedIn,
+    experiences,
+    hosts,
+    bookings,
+    passionPathExperienceIds,
+  } = useApp()
   const router = useRouter()
   const weekKey = useMemo(() => getWeekKey(), [])
   const [revealedCount, setRevealedCount] = useState(3)
@@ -146,10 +153,14 @@ export default function HomePage() {
   const dispatch = useMemo(
     () => createWeeklyRecommendations(
       experiences,
-      recommendationProfileFromUser(user),
+      recommendationProfileFromUser(user, {
+        bookings,
+        passionPathExperienceIds,
+        experiences,
+      }),
       { weekKey }
     ),
-    [experiences, user, weekKey]
+    [bookings, experiences, passionPathExperienceIds, user, weekKey]
   )
   const invitationItems = useMemo(
     () => dispatch.recommendations.flatMap((recommendation) => {

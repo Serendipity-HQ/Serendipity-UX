@@ -36,10 +36,8 @@ function slugify(value: string) {
 
 function toLane(ev: FeedEvent): Lane {
   const seg = [ev.category, ev.segment, ev.genre, ev.title].filter(Boolean).join(' ').toLowerCase()
-  if (/workshop|class|lecture|seminar|discussion|course|training/.test(seg)) return 'growth'
-  if (seg.includes('music') || seg.includes('arts') || seg.includes('theatre') || seg.includes('film')) {
-    return 'passion'
-  }
+  if (/lecture|seminar|discussion|debate|talk|course|training/.test(seg)) return 'growth'
+  if (/workshop|class|lesson|practice|hands-on|studio session|jam session|open mic/.test(seg)) return 'passion'
   return 'surprise'
 }
 
