@@ -4,6 +4,77 @@
    utility classes are generated. */
 @source "../node_modules/@serendipity-hq/ui/src";
 
+/* The selected home concept: forest ink over the existing tactile paper asset. */
+body:has(.home-page) {
+  background-color: #10271f;
+  background-image: url('/textures/home-forest-paper.webp');
+  background-position: center top;
+  background-repeat: repeat;
+  background-size: 1024px auto;
+}
+
+.home-page {
+  color: #f5eddd;
+  font-family: var(--font-home-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-page .font-serif,
+.home-page .home-title,
+.home-page .home-post-title,
+.home-page .weekly-bundle h3,
+.home-page .weekly-bundle h4,
+.home-page .dispatch-number,
+.home-page .dispatch-meta > span:first-child {
+  font-family: var(--font-home-serif), Georgia, serif;
+}
+
+.home-page .home-title,
+.home-page .home-post-title { color: #f8f0e0; }
+.home-page .home-title { font-weight: 500; letter-spacing: -0.025em; }
+.home-page .home-post-title { font-weight: 500; }
+.home-page .home-intro { color: #bdc1b3; }
+.home-page .editorial-kicker { color: #e07a62; }
+.home-page .home-rule {
+  background: repeating-linear-gradient(90deg, #b7bba9 0 12px, transparent 12px 19px);
+  opacity: 0.64;
+}
+.home-page .home-more { border-color: rgba(214, 220, 204, 0.32); }
+.home-page .home-more p { color: #aeb5a7; }
+.home-page .home-more a { color: #ee8a70; }
+
+.home-page .stamp-mark,
+.home-page .lane-stamp,
+.home-page .dispatch-date,
+.home-page .dispatch-ticket-link,
+.home-page .dispatch-footer {
+  font-family: var(--font-home-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body:has(.home-page) .app-mobile-nav {
+  border-top-color: #d7cbb5;
+  color: #293028;
+  background-color: #fff8e8;
+  font-family: var(--font-home-sans), ui-sans-serif, system-ui, sans-serif;
+  box-shadow: 0 -1px 0 rgba(17, 42, 32, 0.2);
+}
+
+body:has(.home-page) .app-mobile-nav a[aria-current='page'] .nav-glyph--home {
+  border-color: #142d23;
+  border-radius: 50%;
+  color: #fff8e8;
+  background: #142d23;
+  box-shadow: none;
+  transform: none;
+}
+
+body:has(.home-page) .app-mobile-nav a[aria-current='page'] > span:last-child {
+  background-color: #c25f49;
+}
+
+body:has(.home-page) .app-mobile-nav a {
+  min-height: 76px;
+}
+
 .stamp-mark {
   display: inline-flex;
   min-height: 24px;
@@ -184,12 +255,17 @@
 }
 
 @media (max-width: 767px) {
-  .dispatch-cover { min-height: 330px; gap: 20px; padding: 28px 20px; }
+  .dispatch-cover { min-height: 310px; gap: 20px; padding: 28px 20px; }
   .dispatch-cover:hover { transform: none; }
-  .home-page { padding-top: 40px; }
+  .home-page { padding-top: 46px; }
   .home-greeting { margin-bottom: 20px; }
-  .home-rule { margin-block: 16px; }
+  .home-page .home-title { font-size: 3.35rem; line-height: 0.93; }
+  .home-page .home-intro { max-width: 330px; font-size: 0.98rem; line-height: 1.65; }
+  .home-rule { margin-block: 24px; }
   .home-dispatch-heading { margin-bottom: 12px; }
+  .home-page .home-dispatch-heading { align-items: flex-end; }
+  .home-page .home-post-title { max-width: 230px; font-size: 2rem; line-height: 1.02; }
+  .home-page .home-dispatch-heading .stamp-mark { margin-bottom: 3px; }
   .dispatch-heading { align-items: flex-start; gap: 12px; padding: 17px 16px 15px; }
   .dispatch-heading h3 { font-size: 1.3rem; line-height: 1.05; }
   .dispatch-row {

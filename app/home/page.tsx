@@ -70,6 +70,7 @@ export default function HomePage() {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
+    year: 'numeric',
   })
   const firstName = user?.name.trim().split(/\s+/)[0] || 'there'
   const city = user?.onboardingProfile?.city || 'your city'
@@ -88,10 +89,10 @@ export default function HomePage() {
             <StampMark tone="cream">week {weekKey.slice(-2)}</StampMark>
             <p className="editorial-kicker text-[10px] uppercase tracking-[0.22em]">{today}</p>
           </div>
-          <h1 className="mb-5 max-w-2xl font-serif text-[clamp(2.6rem,8vw,5.2rem)] leading-[0.98] text-charcoal">
+          <h1 className="home-title mb-5 max-w-2xl font-serif text-[clamp(2.6rem,8vw,5.2rem)] leading-[0.98] text-charcoal">
             {getGreeting()}, {firstName}.
           </h1>
-          <p className="max-w-xl text-base leading-relaxed text-charcoal-light md:text-lg">
+          <p className="home-intro max-w-xl text-base leading-relaxed text-charcoal-light md:text-lg">
             {invitationCountLabel(invitationItems.length)}
           </p>
         </div>
@@ -103,7 +104,7 @@ export default function HomePage() {
         <div className="home-dispatch-heading mb-6 flex items-end justify-between gap-4">
           <div>
             <p className="editorial-kicker mb-2 text-[10px] uppercase tracking-[0.2em]">This week&apos;s post</p>
-            <h2 className="font-serif text-2xl text-charcoal md:text-3xl">A note from your city.</h2>
+            <h2 className="home-post-title font-serif text-2xl text-charcoal md:text-3xl">A note from your city.</h2>
           </div>
           <StampMark tone="cream" className="shrink-0">
             {invitationItems.length} {invitationItems.length === 1 ? 'invitation' : 'invitations'}
@@ -129,7 +130,7 @@ export default function HomePage() {
       )}
 
       <Reveal>
-        <div className="mt-12 flex items-center justify-between border-t border-border/60 pt-8">
+        <div className="home-more mt-12 flex items-center justify-between border-t border-border/60 pt-8">
           <p className="text-xs text-muted">More experiences in Discover.</p>
           <Link
             href="/discover"
