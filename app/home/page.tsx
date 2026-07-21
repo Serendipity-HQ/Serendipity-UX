@@ -113,7 +113,13 @@ export default function HomePage() {
       </Reveal>
 
       <Reveal>
-        <WeeklyEnvelope items={invitationItems} city={city} weekKey={weekKey} />
+        <WeeklyEnvelope
+          key={`${user.id}:${weekKey}`}
+          items={invitationItems}
+          city={city}
+          weekKey={weekKey}
+          userId={user.id}
+        />
       </Reveal>
 
       {dispatch.shortages.length > 0 && invitationItems.length > 0 && invitationItems.length < 3 && (

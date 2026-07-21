@@ -134,7 +134,6 @@ type MatchContext = {
 }
 
 const LANES: Lane[] = ['passion', 'growth', 'surprise']
-const WEEKLY_INVITATION_COUNT = 3
 
 const TOPICS: Record<TopicKey, TopicDefinition> = {
   pottery: {
@@ -768,12 +767,25 @@ function scoreCandidate(
   const topicLabel = semantics.topTopic ? TOPICS[semantics.topTopic].label : undefined
   const path = lane === 'passion' ? match.matchedPath : lane === 'surprise' ? match.bridgeFrom : undefined
   const signals: string[] = []
-  if (lane === 'passion' && path) {
-    signals.push(`${path.label} is part of your path`)
-    signals.push(projectedStep(path, candidate, lane))
+  if (lane === 'passion') {
+    if (path) {
+      signals.push(`${path.label} is part of your path`)
+      signals.push(projectedStep(path, candidate, lane))
+    } else if (match.bridgeFrom && topicLabel) {
+      signals.push(`it opens an active bridge from ${match.bridgeFrom.label} into ${topicLabel}`)
+      signals.push(`its ${semantics.format} turns curiosity into participation`)
+    } else {
+      signals.push(`${topicLabel ?? 'this experience'} is the closest active route in this week's available set`)
+      signals.push(`its ${semantics.format} gives you something to take part in`)
+    }
   } else if (lane === 'growth') {
-    signals.push(`the ${semantics.format} requires active thought rather than passive watching`)
-    if (semantics.cognitiveDepth >= 7) signals.push('it has strong learning or reflection value')
+    if (semantics.cognitiveDepth >= 5.5) {
+      signals.push(`the ${semantics.format} requires active thought rather than passive watching`)
+      if (semantics.cognitiveDepth >= 7) signals.push('it has strong learning or reflection value')
+    } else {
+      signals.push(`the ${semantics.format} is the strongest available change of perspective this week`)
+      signals.push('it asks more of you than repeating your usual routine')
+    }
   } else {
     if (match.directAffinity >= 0.5 && match.matchedPath) {
       signals.push(`it approaches ${match.matchedPath.label} through a less familiar ${semantics.format}`)
@@ -817,13 +829,28 @@ function portfolioScore(recommendations: Recommendation[]): number {
   return recommendations.reduce((sum, item) => sum + item.score, 0) + bonus
 }
 
-function choosePortfolio(ranked: Map<Lane, Recommendation[]>): Recommendation[] {
+function choosePortfolio(
+  ranked: Map<Lane, Recommendation[]>,
+  strictlyEligibleIds: Map<Lane, Set<string>>
+): Recommendation[] {
   let best: Recommendation[] = []
   let bestScore = Number.NEGATIVE_INFINITY
 
   function visit(index: number, selected: Recommendation[], used: Set<string>) {
     if (index === LANES.length) {
-      const score = portfolioScore(selected)
+      const strictMatchCount = selected.reduce((count, recommendation) =>
+        count + (strictlyEligibleIds.get(recommendation.lane)?.has(recommendation.experience.id) ? 1 : 0), 0
+      )
+      const lanePriority = selected.reduce((priority, recommendation) => {
+        if (!strictlyEligibleIds.get(recommendation.lane)?.has(recommendation.experience.id)) return priority
+        if (recommendation.lane === 'passion') return priority + 100
+        if (recommendation.lane === 'growth') return priority + 10
+        return priority + 1
+      }, 0)
+      // Preserve the hard quality gates whenever inventory supports them. Portfolio
+      // diversity and raw score decide only among sets with the same gate coverage.
+      // If inventory is short, protect Passion first and Growth second.
+      const score = strictMatchCount * 1_000_000 + lanePriority * 1_000 + portfolioScore(selected)
       if (score > bestScore) {
         bestScore = score
         best = [...selected]
@@ -853,58 +880,20 @@ function choosePortfolio(ranked: Map<Lane, Recommendation[]>): Recommendation[] 
   return best.sort((a, b) => LANES.indexOf(a.lane) - LANES.indexOf(b.lane))
 }
 
-function adventurePriority(recommendation: Recommendation): number {
-  const { breakdown } = recommendation
-  return breakdown.noveltyFit * 4 +
-    breakdown.adventureFit * 1.5 +
-    breakdown.engagementFit +
-    breakdown.qualityFit +
-    breakdown.availabilityFit * 0.5 +
-    breakdown.locationFit * 0.35
-}
-
-/**
- * Passion and Growth keep their hard quality gates. If either lane cannot produce
- * an honest match, Adventure owns the open slot and selects the strongest unused
- * experience outside the member's ordinary patterns. This guarantees a complete
- * three-invitation dispatch whenever the active inventory contains three options.
- */
-function completeWithAdventures(
-  selected: Recommendation[],
-  candidates: Candidate[],
-  profile: RecommendationProfile,
-  paths: PathState[],
-  now: Date,
-  weekKey: string
-): Recommendation[] {
-  if (selected.length >= WEEKLY_INVITATION_COUNT) return selected.slice(0, WEEKLY_INVITATION_COUNT)
-
-  const usedIds = new Set(selected.map((recommendation) => recommendation.experience.id))
-  const adventures = candidates
-    .filter((candidate) => !usedIds.has(candidate.experience.id))
-    .map((candidate) => scoreCandidate(candidate, 'surprise', profile, paths, now, weekKey))
-    .sort((a, b) =>
-      adventurePriority(b) - adventurePriority(a) ||
-      b.breakdown.noveltyFit - a.breakdown.noveltyFit ||
-      b.score - a.score ||
-      a.experience.id.localeCompare(b.experience.id)
-    )
-
-  const completed = [...selected]
-  while (completed.length < WEEKLY_INVITATION_COUNT && adventures.length > 0) {
-    const usedHosts = new Set(completed.map((item) => item.experience.hostId))
-    const usedDates = new Set(completed.map((item) => item.experience.dateTime.slice(0, 10)))
-    const usedTopics = new Set(completed.map((item) => item.trajectory.interest).filter(Boolean))
-    const diverseIndex = adventures.findIndex((item) =>
-      !usedHosts.has(item.experience.hostId) &&
-      !usedDates.has(item.experience.dateTime.slice(0, 10)) &&
-      (!item.trajectory.interest || !usedTopics.has(item.trajectory.interest))
-    )
-    const [next] = adventures.splice(diverseIndex >= 0 ? diverseIndex : 0, 1)
-    completed.push(next)
+function fallbackReason(recommendation: Recommendation): Recommendation {
+  if (recommendation.lane === 'passion') {
+    return {
+      ...recommendation,
+      reason: `This is your strongest available passion lead: ${recommendation.signals.slice(0, 2).join('; ')}.`,
+    }
   }
-
-  return completed.sort((a, b) => LANES.indexOf(a.lane) - LANES.indexOf(b.lane))
+  if (recommendation.lane === 'growth') {
+    return {
+      ...recommendation,
+      reason: `This is this week's strongest growth edge: ${recommendation.signals.slice(0, 2).join('; ')}.`,
+    }
+  }
+  return recommendation
 }
 
 /**
@@ -913,7 +902,9 @@ function completeWithAdventures(
  * 1. Infer what an event asks the guest to do, not merely what category it has.
  * 2. Build a stage for every declared passion from saved/booked/completed evidence.
  * 3. Project the next achievable step instead of repeating or overreaching.
- * 4. Apply hard quality gates per lane, then optimize the three invitations as a set.
+ * 4. Apply hard quality gates per lane, then guarantee one distinct invitation for
+ *    Passion, Growth, and Adventure using the best lane-specific fallback only when
+ *    the current inventory cannot satisfy a gate.
  */
 export function createWeeklyRecommendations(
   experiences: Experience[],
@@ -936,22 +927,23 @@ export function createWeeklyRecommendations(
     .map((experience) => ({ experience, semantics: analyzeExperience(experience) }))
 
   const ranked = new Map<Lane, Recommendation[]>()
+  const strictlyEligibleIds = new Map<Lane, Set<string>>()
   for (const lane of LANES) {
-    const recommendations = candidates
+    const eligibleCandidates = candidates
       .filter((candidate) => laneEligibility(candidate, lane, matchContext(candidate, paths), paths.length > 0))
+    const eligibleIds = new Set(eligibleCandidates.map((candidate) => candidate.experience.id))
+    strictlyEligibleIds.set(lane, eligibleIds)
+    const strictRecommendations = eligibleCandidates
       .map((candidate) => scoreCandidate(candidate, lane, profile, paths, now, weekKey))
       .sort((a, b) => b.score - a.score || a.experience.id.localeCompare(b.experience.id))
-    ranked.set(lane, recommendations)
+    const fallbackRecommendations = candidates
+      .filter((candidate) => !eligibleIds.has(candidate.experience.id))
+      .map((candidate) => fallbackReason(scoreCandidate(candidate, lane, profile, paths, now, weekKey)))
+      .sort((a, b) => b.score - a.score || a.experience.id.localeCompare(b.experience.id))
+    ranked.set(lane, [...strictRecommendations, ...fallbackRecommendations])
   }
 
-  const recommendations = completeWithAdventures(
-    choosePortfolio(ranked),
-    candidates,
-    profile,
-    paths,
-    now,
-    weekKey
-  )
+  const recommendations = choosePortfolio(ranked, strictlyEligibleIds)
   const selectedLanes = new Set(recommendations.map((recommendation) => recommendation.lane))
   const shortages = LANES.filter((lane) => !selectedLanes.has(lane))
   return { recommendations, shortages, eligibleCount: candidates.length }

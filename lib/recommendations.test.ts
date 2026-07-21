@@ -142,7 +142,7 @@ test('Surprise prefers an adjacent new direction over an arbitrary unrelated act
   assert.equal(surprise?.experience.id, 'foraging')
 })
 
-test('A weekly dispatch always has three unique invitations by filling open lanes with Adventure', () => {
+test('A weekly dispatch always has one Passion, one Growth, and one Adventure invitation', () => {
   const growth = experience(
     'growth',
     'The Examined Life',
@@ -175,10 +175,10 @@ test('A weekly dispatch always has three unique invitations by filling open lane
 
   assert.equal(result.recommendations.length, 3)
   assert.equal(new Set(result.recommendations.map((item) => item.experience.id)).size, 3)
-  assert.ok(result.recommendations.filter((item) => item.lane === 'surprise').length >= 2)
+  assert.deepEqual(result.recommendations.map((item) => item.lane), ['passion', 'growth', 'surprise'])
   assert.ok(result.recommendations
-    .filter((item) => item.lane === 'surprise')
-    .every((item) => item.reason.startsWith('This is an adventure beyond your usual orbit:')))
+    .find((item) => item.lane === 'surprise')
+    ?.reason.startsWith('This is an adventure beyond your usual orbit:'))
 })
 
 test('Adventure supplements prioritize what is least ordinary for the member', () => {
@@ -205,11 +205,11 @@ test('Adventure supplements prioritize what is least ordinary for the member', (
     interests: ['Cooking'],
     adventurousness: 90,
   })
-  const adventures = result.recommendations.filter((item) => item.lane === 'surprise')
+  const adventure = result.recommendations.find((item) => item.lane === 'surprise')
 
   assert.equal(result.recommendations.length, 3)
-  assert.ok(adventures.some((item) => item.experience.id === 'unexpected'))
-  assert.ok(adventures.every((item) => item.breakdown.noveltyFit >= 5))
+  assert.equal(adventure?.experience.id, 'unexpected')
+  assert.ok((adventure?.breakdown.noveltyFit ?? 0) >= 5)
 })
 
 test('Questionnaire direction and behavioral history are combined into one profile', () => {

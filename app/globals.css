@@ -4,13 +4,66 @@
    utility classes are generated. */
 @source "../node_modules/@serendipity-hq/ui/src";
 
-/* The selected home concept: forest ink over the existing tactile paper asset. */
-body:has(.home-page) {
+/* The selected app concept: forest ink over the existing tactile paper asset. */
+body:has(.app-mobile-nav),
+body:has(.entry-sheet) {
   background-color: #10271f;
   background-image: url('/textures/home-forest-paper.webp');
   background-position: center top;
   background-repeat: repeat;
   background-size: 1024px auto;
+}
+
+body:has(.entry-sheet) main,
+body:has(.entry-sheet) > div {
+  color: #f5eddd;
+  font-family: var(--font-home-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body:has(.entry-sheet) :is(h1, h2, h3, h4, .font-serif) {
+  font-family: var(--font-home-serif), Georgia, serif;
+}
+
+body:has(.entry-sheet) .text-charcoal { color: #f8f0e0; }
+body:has(.entry-sheet) .text-charcoal-light { color: #c5c8bb; }
+body:has(.entry-sheet) .text-muted { color: #aeb5a7; }
+body:has(.entry-sheet) :is(.entry-sheet, .invitation-card) { color: #293028; }
+body:has(.entry-sheet) :is(.entry-sheet, .invitation-card) .text-charcoal { color: #293028; }
+body:has(.entry-sheet) :is(.entry-sheet, .invitation-card) .text-charcoal-light { color: #4f5a4f; }
+body:has(.entry-sheet) :is(.entry-sheet, .invitation-card) .text-muted { color: #6d746b; }
+
+body:has(.app-mobile-nav) main {
+  color: #f5eddd;
+  font-family: var(--font-home-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+body:has(.app-mobile-nav) main :is(h1, h2, h3, h4, .font-serif) {
+  font-family: var(--font-home-serif), Georgia, serif;
+}
+
+/* Semantic ink colors switch to their night-paper equivalents in the app shell. */
+body:has(.app-mobile-nav) main .text-charcoal { color: #f8f0e0; }
+body:has(.app-mobile-nav) main .text-charcoal-light { color: #c5c8bb; }
+body:has(.app-mobile-nav) main .text-muted { color: #aeb5a7; }
+body:has(.app-mobile-nav) main .border-border { border-color: rgba(214, 220, 204, 0.32); }
+body:has(.app-mobile-nav) main input::placeholder,
+body:has(.app-mobile-nav) main textarea::placeholder { color: #8f998b; }
+
+/* Invitation sheets remain light paper laid over the dark forest field. */
+body:has(.app-mobile-nav) main :is(.liquid-card, .liquid-panel, .invitation-card, .weekly-bundle) {
+  color: #293028;
+}
+body:has(.app-mobile-nav) main :is(.liquid-card, .liquid-panel, .invitation-card, .weekly-bundle) .text-charcoal {
+  color: #293028;
+}
+body:has(.app-mobile-nav) main :is(.liquid-card, .liquid-panel, .invitation-card, .weekly-bundle) .text-charcoal-light {
+  color: #4f5a4f;
+}
+body:has(.app-mobile-nav) main :is(.liquid-card, .liquid-panel, .invitation-card, .weekly-bundle) .text-muted {
+  color: #6d746b;
+}
+body:has(.app-mobile-nav) main :is(.liquid-card, .liquid-panel, .invitation-card, .weekly-bundle) .border-border {
+  border-color: #c8bca4;
 }
 
 .home-page {
@@ -50,7 +103,7 @@ body:has(.home-page) {
   font-family: var(--font-home-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-body:has(.home-page) .app-mobile-nav {
+body:has(.app-mobile-nav) .app-mobile-nav {
   border-top-color: #d7cbb5;
   color: #293028;
   background-color: #fff8e8;
@@ -58,7 +111,7 @@ body:has(.home-page) .app-mobile-nav {
   box-shadow: 0 -1px 0 rgba(17, 42, 32, 0.2);
 }
 
-body:has(.home-page) .app-mobile-nav a[aria-current='page'] .nav-glyph--home {
+body:has(.app-mobile-nav) .app-mobile-nav a[aria-current='page'] .nav-glyph--home {
   border-color: #142d23;
   border-radius: 50%;
   color: #fff8e8;
@@ -67,11 +120,11 @@ body:has(.home-page) .app-mobile-nav a[aria-current='page'] .nav-glyph--home {
   transform: none;
 }
 
-body:has(.home-page) .app-mobile-nav a[aria-current='page'] > span:last-child {
+body:has(.app-mobile-nav) .app-mobile-nav a[aria-current='page'] > span:last-child {
   background-color: #c25f49;
 }
 
-body:has(.home-page) .app-mobile-nav a {
+body:has(.app-mobile-nav) .app-mobile-nav a {
   min-height: 76px;
 }
 

@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { ArrowUpRight, CalendarDays, MailOpen } from 'lucide-react'
 import type { Experience, Host } from '@serendipity-hq/design'
 import { LaneBadge } from '@serendipity-hq/ui'
@@ -50,13 +50,29 @@ export default function WeeklyEnvelope({
   items,
   city,
   weekKey,
+  userId,
 }: {
   items: WeeklyInvitationItem[]
   city: string
   weekKey: string
+  userId: string
 }) {
   const [phase, setPhase] = useState<'closed' | 'opening' | 'open'>('closed')
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const storageKey = `serendipity:weekly-dispatch:${userId}:${weekKey}:opened`
+  const subscribeToOpenedState = useCallback((onStoreChange: () => void) => {
+    function handleStorage(event: StorageEvent) {
+      if (event.key === storageKey) onStoreChange()
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [storageKey])
+  const getOpenedState = useCallback(
+    () => window.localStorage.getItem(storageKey) === 'true',
+    [storageKey]
+  )
+  const wasPreviouslyOpened = useSyncExternalStore(subscribeToOpenedState, getOpenedState, () => false)
+  const isOpen = phase === 'open' || wasPreviouslyOpened
   const weekNumber = weekKey.split('-W')[1] ?? weekKey.slice(-2)
   const dispatchTitle = `${countWord(items.length)} ${items.length === 1 ? 'way' : 'ways'} to be out there this week.`
 
@@ -67,7 +83,8 @@ export default function WeeklyEnvelope({
   }, [])
 
   function openDispatch() {
-    if (phase !== 'closed' || items.length === 0) return
+    if (phase !== 'closed' || isOpen || items.length === 0) return
+    window.localStorage.setItem(storageKey, 'true')
     setPhase('opening')
     const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 20 : 220
     openTimer.current = setTimeout(() => setPhase('open'), delay)
@@ -86,7 +103,7 @@ export default function WeeklyEnvelope({
 
   return (
     <article className="weekly-bundle" aria-live="polite">
-      {phase !== 'open' ? (
+      {!isOpen ? (
         <button
           type="button"
           onClick={openDispatch}
