@@ -6,7 +6,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { LogOut, Edit2, Check, X, Ticket, Wallet, ArrowRight } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS } from '@serendipity-hq/design'
+import { interestsByCategory } from '@serendipity-hq/design'
+
+const INTEREST_GROUPS = interestsByCategory()
 import { LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 function formatDate(dt: string) {
@@ -180,21 +182,28 @@ export default function ProfilePage() {
             )}
           </div>
           {editingInterests ? (
-            <div className="flex flex-wrap gap-2">
-              {INTEREST_TAGS.map((tag) => {
-                const selected = tempInterests.includes(tag)
-                return (
-                  <button
-                    key={tag}
-                    onClick={() => toggleInterest(tag)}
-                    className={`px-3 py-1.5 rounded-full border text-xs tracking-wide transition-all duration-200 ${
-                      selected ? 'bg-charcoal text-cream border-charcoal' : 'text-muted border-border hover:border-sand'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                )
-              })}
+            <div className="max-h-72 overflow-y-auto pr-1 space-y-4">
+              {INTEREST_GROUPS.map(({ category, interests }) => (
+                <div key={category.id}>
+                  <p className="text-[9px] tracking-widest uppercase text-muted/70 mb-1.5">{category.label}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {interests.map(({ tag }) => {
+                      const selected = tempInterests.includes(tag)
+                      return (
+                        <button
+                          key={tag}
+                          onClick={() => toggleInterest(tag)}
+                          className={`px-3 py-1.5 rounded-full border text-xs tracking-wide transition-all duration-200 ${
+                            selected ? 'bg-charcoal text-cream border-charcoal' : 'text-muted border-border hover:border-sand'
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">

@@ -5,8 +5,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Leaf, Check, Compass, Sparkles } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS, LANE_LABELS } from '@serendipity-hq/design'
+import { interestsByCategory, LANE_LABELS } from '@serendipity-hq/design'
 import type { Lane, UserRole } from '@serendipity-hq/design'
+
+const INTEREST_GROUPS = interestsByCategory()
+const MIN_INTERESTS = 4
 
 type Step = 'role' | 'account' | 'interests' | 'questionnaire'
 
@@ -39,6 +42,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
+  const [interestFilter, setInterestFilter] = useState('')
   const [loading, setLoading] = useState(false)
 
   // Host questionnaire
@@ -74,7 +78,7 @@ export default function SignupPage() {
   }
 
   function handleInterestsSubmit() {
-    if (selectedInterests.length < 4) return
+    if (selectedInterests.length < MIN_INTERESTS) return
     setLoading(true)
     setTimeout(() => {
       login(email, password, { name, interests: selectedInterests, role: 'attendee' })
@@ -160,45 +164,70 @@ export default function SignupPage() {
   }
 
   if (step === 'interests') {
+    const filter = interestFilter.trim().toLowerCase()
+    const visibleGroups = INTEREST_GROUPS.map(({ category, interests }) => ({
+      category,
+      interests: filter ? interests.filter((i) => i.tag.toLowerCase().includes(filter)) : interests,
+    })).filter(({ interests }) => interests.length > 0)
+
     return (
       <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-5 py-16">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-10">
+        <div className="w-full max-w-2xl">
+          <div className="text-center mb-8">
             <p className="text-[10px] tracking-[0.2em] uppercase text-muted mb-4">Step 3 of 3</p>
             <h1 className="font-serif text-3xl text-charcoal mb-2">What moves you?</h1>
-            <p className="text-sm text-muted max-w-xs mx-auto leading-relaxed">
-              Pick at least 4. We&apos;ll shape your weekly invitations around what you love.
+            <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
+              Pick at least {MIN_INTERESTS} — the more you choose, the sharper your Passion feed and the
+              richer your Growth exploration. Nothing here is final; you can update these anytime.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-8 justify-center">
-            {INTEREST_TAGS.map((tag) => {
-              const selected = selectedInterests.includes(tag)
-              return (
-                <button
-                  key={tag}
-                  onClick={() => toggleInterest(tag)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-xs tracking-wide transition-all duration-200 active:scale-95 ${
-                    selected
-                      ? 'bg-charcoal text-cream border-charcoal'
-                      : 'bg-white text-charcoal-light border-border hover:border-sand'
-                  }`}
-                >
-                  {selected && <Check className="w-3 h-3" strokeWidth={2.5} />}
-                  {tag}
-                </button>
-              )
-            })}
+          <input
+            type="text"
+            value={interestFilter}
+            onChange={(e) => setInterestFilter(e.target.value)}
+            placeholder="Search interests…"
+            className="border border-white/16 bg-white/8 w-full max-w-xs mx-auto mb-8 block rounded-full px-4 py-2.5 text-sm text-charcoal placeholder-muted/60 focus:outline-none focus:border-white/50 transition-colors duration-200"
+          />
+
+          <div className="max-h-[46vh] overflow-y-auto pr-1 mb-8 space-y-6">
+            {visibleGroups.map(({ category, interests }) => (
+              <div key={category.id}>
+                <p className="text-[10px] tracking-widest uppercase text-muted mb-2.5">{category.label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {interests.map(({ tag }) => {
+                    const selected = selectedInterests.includes(tag)
+                    return (
+                      <button
+                        key={tag}
+                        onClick={() => toggleInterest(tag)}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-full border text-xs tracking-wide transition-all duration-200 active:scale-95 ${
+                          selected
+                            ? 'bg-charcoal text-cream border-charcoal'
+                            : 'bg-white text-charcoal-light border-border hover:border-sand'
+                        }`}
+                      >
+                        {selected && <Check className="w-3 h-3" strokeWidth={2.5} />}
+                        {tag}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+            {visibleGroups.length === 0 && (
+              <p className="text-center text-sm text-muted py-8">No interests match &ldquo;{interestFilter}&rdquo;.</p>
+            )}
           </div>
 
           <p className="text-center text-xs text-muted mb-6">
             {selectedInterests.length} selected
-            {selectedInterests.length < 4 && ` — ${4 - selectedInterests.length} more to go`}
+            {selectedInterests.length < MIN_INTERESTS && ` — ${MIN_INTERESTS - selectedInterests.length} more to go`}
           </p>
 
           <button
             onClick={handleInterestsSubmit}
-            disabled={selectedInterests.length < 4 || loading}
+            disabled={selectedInterests.length < MIN_INTERESTS || loading}
             className="w-full bg-charcoal text-cream py-3.5 rounded-full text-sm tracking-wide hover:bg-charcoal/85 transition-all duration-200 disabled:opacity-30 active:scale-95"
           >
             {loading ? 'Creating your account…' : 'Enter Serendipity'}

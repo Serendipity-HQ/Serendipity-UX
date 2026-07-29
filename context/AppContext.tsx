@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import type { User, Transaction, Booking, Post, Connection, Experience, Host, NewExperienceInput } from '@serendipity-hq/design'
+import type { GrowthState } from '@serendipity-hq/algorithm'
+import { initGrowthState, applyBooking, applyDismiss, classifyEventCategory } from '@serendipity-hq/algorithm'
 import {
   DEMO_USER,
   DEMO_TRANSACTIONS,
@@ -40,6 +42,11 @@ type AppState = {
   resonatePost: (postId: string) => void
   createExperience: (input: NewExperienceInput) => Experience | null
   myHostedExperiences: Experience[]
+  /** This user's learned Growth state (@serendipity-hq/algorithm) — persisted, grows over time. */
+  growthState: GrowthState
+  /** Ids the user has dismissed ("not for me") — excluded from every lane going forward. */
+  dismissedIds: string[]
+  dismissExperience: (experienceId: string) => void
 }
 
 const AppContext = createContext<AppState | null>(null)
@@ -53,6 +60,8 @@ const STORAGE_KEYS = {
   hostExperiences: 'serendipity_host_experiences',
   hostRecords: 'serendipity_host_records',
   loggedIn: 'serendipity_logged_in',
+  growthState: 'serendipity_growth_state',
+  dismissedIds: 'serendipity_dismissed_ids',
 }
 
 function slugify(value: string) {
@@ -90,6 +99,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [eventsSource, setEventsSource] = useState<'supabase' | 'mock'>('mock')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [growthState, setGrowthState] = useState<GrowthState>(() => initGrowthState([]))
+  const [dismissedIds, setDismissedIds] = useState<string[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -120,6 +131,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setPosts(load<Post[]>(STORAGE_KEYS.posts, SEED_POSTS))
       setHostExperiences(load<Experience[]>(STORAGE_KEYS.hostExperiences, []))
       setHostRecords(load<Host[]>(STORAGE_KEYS.hostRecords, []))
+      const loadedUser = load<User>(STORAGE_KEYS.user, DEMO_USER)
+      setGrowthState(load<GrowthState>(STORAGE_KEYS.growthState, initGrowthState(loadedUser.interests)))
+      setDismissedIds(load<string[]>(STORAGE_KEYS.dismissedIds, []))
     }
     setHydrated(true)
   }, [])
@@ -131,6 +145,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const persistPosts = useCallback((p: Post[]) => { setPosts(p); save(STORAGE_KEYS.posts, p) }, [])
   const persistHostExperiences = useCallback((e: Experience[]) => { setHostExperiences(e); save(STORAGE_KEYS.hostExperiences, e) }, [])
   const persistHostRecords = useCallback((h: Host[]) => { setHostRecords(h); save(STORAGE_KEYS.hostRecords, h) }, [])
+  const persistGrowthState = useCallback((g: GrowthState) => { setGrowthState(g); save(STORAGE_KEYS.growthState, g) }, [])
+  const persistDismissedIds = useCallback((ids: string[]) => { setDismissedIds(ids); save(STORAGE_KEYS.dismissedIds, ids) }, [])
 
   const login = useCallback(
     (email: string, _password: string, userData?: Partial<User>) => {
@@ -151,16 +167,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       persistPosts(load<Post[]>(STORAGE_KEYS.posts, SEED_POSTS))
       setHostExperiences(load<Experience[]>(STORAGE_KEYS.hostExperiences, []))
       setHostRecords(load<Host[]>(STORAGE_KEYS.hostRecords, []))
+      // Fresh Growth state per interests on (re)login — an existing user's
+      // learned weights persist across sessions via STORAGE_KEYS.growthState;
+      // this only fires the first time (nothing stored yet) or on signup.
+      persistGrowthState(load<GrowthState>(STORAGE_KEYS.growthState, initGrowthState(newUser.interests)))
+      persistDismissedIds(load<string[]>(STORAGE_KEYS.dismissedIds, []))
       setIsLoggedIn(true)
       save(STORAGE_KEYS.loggedIn, true)
     },
-    [persistUser, persistTransactions, persistBookings, persistConnections, persistPosts]
+    [persistUser, persistTransactions, persistBookings, persistConnections, persistPosts, persistGrowthState, persistDismissedIds]
   )
 
   const logout = useCallback(() => {
     setUser(null); setTransactions([]); setBookings([])
     setConnections([]); setPosts([]); setIsLoggedIn(false)
     setHostExperiences([]); setHostRecords([])
+    setGrowthState(initGrowthState([])); setDismissedIds([])
     Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k))
   }, [])
 
@@ -199,9 +221,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       persistUser({ ...user, walletBalanceCents: user.walletBalanceCents - totalCents })
       persistTransactions([txn, ...transactions])
       persistBookings([booking, ...bookings])
+
+      // Growth feedback: if this event falls in one of the user's active
+      // exploration categories, reinforce it. Core-interest categories
+      // (Passion's territory) aren't tracked in growthState.weights at
+      // all, so booking one of those is correctly a no-op here.
+      const bookedEvent = hostExperiences.find((e) => e.id === experienceId) ?? experiences.find((e) => e.id === experienceId)
+      if (bookedEvent) {
+        const category = classifyEventCategory(bookedEvent)
+        if (category in growthState.weights) {
+          persistGrowthState(applyBooking(growthState, category))
+        }
+      }
+
       return booking
     },
-    [user, transactions, bookings, persistUser, persistTransactions, persistBookings]
+    [user, transactions, bookings, experiences, hostExperiences, growthState, persistUser, persistTransactions, persistBookings, persistGrowthState]
   )
 
   const cancelBooking = useCallback(
@@ -302,6 +337,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [posts, persistPosts]
   )
 
+  const dismissExperience = useCallback(
+    (experienceId: string) => {
+      if (!dismissedIds.includes(experienceId)) {
+        persistDismissedIds([...dismissedIds, experienceId])
+      }
+      const event = hostExperiences.find((e) => e.id === experienceId) ?? experiences.find((e) => e.id === experienceId)
+      if (event) {
+        const category = classifyEventCategory(event)
+        if (category in growthState.weights) {
+          persistGrowthState(applyDismiss(growthState, category))
+        }
+      }
+    },
+    [dismissedIds, experiences, hostExperiences, growthState, persistDismissedIds, persistGrowthState]
+  )
+
   const createExperience = useCallback(
     (input: NewExperienceInput): Experience | null => {
       if (!user || user.role !== 'host' || !user.hostProfile) return null
@@ -362,6 +413,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addPaymentMethod, removePaymentMethod, updateUserInterests, updateUserBio,
       follow, unfollow, isFollowing, isFollowedBy, createPost, resonatePost,
       createExperience, myHostedExperiences,
+      growthState, dismissedIds, dismissExperience,
     }}>
       {children}
     </AppContext.Provider>

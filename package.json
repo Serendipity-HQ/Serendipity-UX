@@ -9,8 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@serendipity-hq/design": "github:Serendipity-HQ/Serendipity-Design",
-    "@serendipity-hq/ui": "github:Serendipity-HQ/Serendipity-UI",
+    "@serendipity-hq/algorithm": "github:Serendipity-HQ/Serendipity-Algorithm",
+    "@serendipity-hq/design": "github:Serendipity-HQ/Serendipity-Design#feat/interest-taxonomy",
+    "@serendipity-hq/ui": "github:Serendipity-HQ/Serendipity-UI#feat/dismiss-affordance",
     "@supabase/supabase-js": "^2.110.2",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",

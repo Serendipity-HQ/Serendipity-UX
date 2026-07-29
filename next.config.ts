@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@serendipity-hq/design', '@serendipity-hq/ui'],
+  transpilePackages: ['@serendipity-hq/design', '@serendipity-hq/ui', '@serendipity-hq/algorithm'],
   images: {
     unoptimized: true,
     remotePatterns: [
