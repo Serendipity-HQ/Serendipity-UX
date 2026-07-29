@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
-import type { Lane } from '@serendipity-hq/design'
+import type { Experience, Lane } from '@serendipity-hq/design'
 import { useApp } from '@/context/AppContext'
-import { LaneBadge, Reveal } from '@serendipity-hq/ui'
-import ExperienceCard from '@/components/ExperienceCard'
+import { recommend, type ScoredEvent } from '@serendipity-hq/algorithm'
+import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
 
 const LANES: { value: Lane | 'all'; label: string }[] = [
   { value: 'all',      label: 'All' },
@@ -14,40 +14,62 @@ const LANES: { value: Lane | 'all'; label: string }[] = [
   { value: 'surprise', label: 'Surprise' },
 ]
 
-const PAGE_SIZE = 6
+const SECTION_LABELS: Record<Lane, string> = {
+  passion: 'Passion — because you like this',
+  growth: 'Growth — a stretch worth trying',
+  surprise: 'Surprise — something different',
+}
+
+const COUNT_PER_LANE = 8
 
 export default function DiscoverPage() {
-  const { experiences, hosts } = useApp()
-  const [query, setQuery]   = useState('')
-  const [lane, setLane]     = useState<Lane | 'all'>('all')
-  const [page, setPage]     = useState(1)
-  const [now] = useState(() => Date.now())
+  const { experiences, hosts, user, bookings, growthState, dismissedIds, dismissExperience } = useApp()
+  const [query, setQuery] = useState('')
+  const [lane, setLane]   = useState<Lane | 'all'>('all')
 
-  const filtered = experiences.filter((e) => {
-    const startTime = new Date(e.dateTime).getTime()
-    const isBookable = Number.isFinite(startTime) && startTime > now && e.spotsBooked < e.spotsTotal
-    const matchesLane = lane === 'all' || e.lane === lane
-    const q = query.toLowerCase()
-    const matchesQuery =
-      !query ||
-      e.title.toLowerCase().includes(q) ||
-      e.tags.some((t) => t.toLowerCase().includes(q)) ||
-      hosts.find((h) => h.id === e.hostId)?.name.toLowerCase().includes(q)
-    return isBookable && matchesLane && matchesQuery
-  }).sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+  // Every event a user has already booked (upcoming or completed) is
+  // excluded from all three lanes — nothing recommends what you've done.
+  const excludeIds = useMemo(() => {
+    const booked = bookings.filter((b) => b.status !== 'cancelled').map((b) => b.experienceId)
+    return [...booked, ...dismissedIds]
+  }, [bookings, dismissedIds])
 
-  const paginated = filtered.slice(0, page * PAGE_SIZE)
-  const hasMore   = paginated.length < filtered.length
+  // The actual recommendation call — Passion scored against interests,
+  // Growth drawn from the learned per-user state, Surprise genuinely
+  // random. Memoized so Surprise's random draw doesn't reshuffle on every
+  // keystroke in the search box; it only redraws when the underlying
+  // pool, interests, or learned state actually change.
+  const result = useMemo(
+    () =>
+      recommend({
+        interests: user?.interests ?? [],
+        events: experiences,
+        growthState,
+        excludeIds,
+        countPerLane: COUNT_PER_LANE,
+      }),
+    [experiences, user?.interests, growthState, excludeIds],
+  )
 
-  function handleLaneChange(l: Lane | 'all') {
-    setLane(l)
-    setPage(1)
+  const q = query.toLowerCase()
+  function matchesQuery(exp: Experience) {
+    if (!q) return true
+    const host = hosts.find((h) => h.id === exp.hostId)
+    return (
+      exp.title.toLowerCase().includes(q) ||
+      exp.tags.some((t) => t.toLowerCase().includes(q)) ||
+      Boolean(host?.name.toLowerCase().includes(q))
+    )
   }
 
-  function handleSearch(q: string) {
-    setQuery(q)
-    setPage(1)
-  }
+  const sections = (['passion', 'growth', 'surprise'] as const)
+    .filter((l) => lane === 'all' || lane === l)
+    .map((l) => ({
+      lane: l,
+      items: result[l].filter((r) => matchesQuery(r.event)),
+    }))
+
+  const totalCount = sections.reduce((n, s) => n + s.items.length, 0)
 
   return (
     <div className="max-w-5xl mx-auto px-5 py-10 md:py-14">
@@ -56,7 +78,7 @@ export default function DiscoverPage() {
         <p className="text-[10px] tracking-[0.2em] uppercase text-muted mb-3">Explore</p>
         <h1 className="font-serif text-3xl md:text-4xl text-charcoal mb-1">Discover.</h1>
         <p className="text-sm text-muted mb-8">
-          {filtered.length} experience{filtered.length !== 1 ? 's' : ''} available.
+          {totalCount} experience{totalCount !== 1 ? 's' : ''} picked for you.
         </p>
       </Reveal>
 
@@ -72,8 +94,8 @@ export default function DiscoverPage() {
               type="text"
               placeholder="Search by name, host, or tag…"
               value={query}
-              onChange={(e) => handleSearch(e.target.value)}
-            className="border border-white/16 bg-white/8 w-full rounded-full pl-10 pr-4 py-3 text-sm text-charcoal placeholder-muted/60 focus:outline-none focus:border-white/80 transition-colors duration-200"
+              onChange={(e) => setQuery(e.target.value)}
+              className="border border-white/16 bg-white/8 w-full rounded-full pl-10 pr-4 py-3 text-sm text-charcoal placeholder-muted/60 focus:outline-none focus:border-white/80 transition-colors duration-200"
             />
           </div>
 
@@ -81,7 +103,7 @@ export default function DiscoverPage() {
             {LANES.map(({ value, label }) => (
               <button
                 key={value}
-                onClick={() => handleLaneChange(value)}
+                onClick={() => setLane(value)}
                 className={`px-4 py-2 rounded-full text-xs tracking-wide border transition-all duration-200 active:scale-95 ${
                   lane === value
                     ? 'bg-charcoal text-cream border-charcoal'
@@ -99,43 +121,47 @@ export default function DiscoverPage() {
         </div>
       </Reveal>
 
-      {/* Grid */}
-      {filtered.length === 0 ? (
+      {/* Sections */}
+      {totalCount === 0 ? (
         <div className="liquid-card text-center py-20 px-8 rounded-[28px]">
           <p className="font-serif text-2xl text-charcoal mb-2">Nothing found.</p>
-          <p className="text-sm text-muted">Try adjusting your search or filters.</p>
+          <p className="text-sm text-muted">
+            {user?.interests.length
+              ? 'Try adjusting your search or filters.'
+              : 'Add a few interests in your profile to sharpen your Passion feed.'}
+          </p>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {paginated.map((exp, i) => {
-              const host = hosts.find((h) => h.id === exp.hostId)
-              if (!host) return null
-              return (
-                <Reveal key={exp.id} delay={(i % PAGE_SIZE) * 50}>
-                  <ExperienceCard experience={exp} host={host} />
-                </Reveal>
-              )
-            })}
-          </div>
-
-          {hasMore && (
-            <div className="text-center mt-12">
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                className="border border-border text-muted px-8 py-3 rounded-full text-xs tracking-widest uppercase hover:border-sand hover:text-charcoal transition-all duration-200 active:scale-95"
-              >
-                Show more · {filtered.length - paginated.length} remaining
-              </button>
-            </div>
+        <div className="space-y-12">
+          {sections.map(({ lane: sectionLane, items }) =>
+            items.length === 0 ? null : (
+              <div key={sectionLane}>
+                {lane === 'all' && (
+                  <p className="text-[10px] tracking-widest uppercase text-muted mb-4">
+                    {SECTION_LABELS[sectionLane]}
+                  </p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {items.map((scored: ScoredEvent<Experience>, i: number) => {
+                    const host = hosts.find((h) => h.id === scored.event.hostId)
+                    if (!host) return null
+                    return (
+                      <Reveal key={scored.event.id} delay={(i % COUNT_PER_LANE) * 50}>
+                        <ExperienceCard
+                          experience={{ ...scored.event, lane: sectionLane }}
+                          host={host}
+                          onDismiss={
+                            sectionLane === 'growth' ? () => dismissExperience(scored.event.id) : undefined
+                          }
+                        />
+                      </Reveal>
+                    )
+                  })}
+                </div>
+              </div>
+            ),
           )}
-
-          {!hasMore && page > 1 && (
-            <p className="text-center text-[10px] tracking-widest uppercase text-muted/50 mt-10">
-              All {filtered.length} experiences
-            </p>
-          )}
-        </>
+        </div>
       )}
     </div>
   )

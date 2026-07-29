@@ -24,8 +24,11 @@ import {
   type SocialStyle,
   type TravelRadius,
 } from '@/lib/onboarding-profile'
-import { INTEREST_TAGS, LANE_LABELS } from '@serendipity-hq/design'
+import { interestsByCategory, LANE_LABELS } from '@serendipity-hq/design'
 import type { Lane, UserRole } from '@serendipity-hq/design'
+
+const INTEREST_GROUPS = interestsByCategory()
+const MIN_INTERESTS = 4
 
 type Step =
   | 'role'
@@ -95,6 +98,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [profile, setProfile] = useState<OnboardingProfile>(DEFAULT_ATTENDEE_PROFILE)
+  const [interestFilter, setInterestFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [authMessage, setAuthMessage] = useState('')
 
@@ -218,7 +222,7 @@ export default function SignupPage() {
 
   const canContinue =
     step === 'place' ? Boolean(profile.city.trim())
-      : step === 'interests' ? profile.interests.length >= 3
+      : step === 'interests' ? profile.interests.length >= MIN_INTERESTS
         : step === 'intent' ? profile.intents.length > 0
           : step === 'availability' ? profile.availability.length > 0
             : true
@@ -286,9 +290,59 @@ export default function SignupPage() {
             )}
 
             {step === 'interests' && (
-              <Question eyebrow="CHOOSE AT LEAST THREE" title="What pulls you in?" prompt="Pick the things that make you look twice, stay late, or lose track of time.">
-                <div className="flex flex-wrap gap-2">{INTEREST_TAGS.map((interest) => <ChoicePill key={interest} selected={profile.interests.includes(interest)} onClick={() => toggleProfileList('interests', interest)}>{interest}</ChoicePill>)}</div>
-                <p className="mt-4 text-xs text-muted">{profile.interests.length ? `${profile.interests.length} marked` : 'Nothing is too niche.'}{profile.interests.length < 3 && ` · choose ${3 - profile.interests.length} more`}</p>
+              <Question
+                eyebrow={`CHOOSE AT LEAST ${MIN_INTERESTS}`}
+                title="What pulls you in?"
+                prompt="Pick the things that make you look twice, stay late, or lose track of time. These choices shape your Passion feed and your Growth exploration."
+              >
+                <input
+                  type="search"
+                  value={interestFilter}
+                  onChange={(event) => setInterestFilter(event.target.value)}
+                  placeholder="Search interests…"
+                  aria-label="Search interests"
+                  className={`${inputClass} max-w-sm`}
+                />
+                <div className="max-h-[46vh] space-y-6 overflow-y-auto pr-2">
+                  {INTEREST_GROUPS.map(({ category, interests }) => {
+                    const query = interestFilter.trim().toLowerCase()
+                    const visibleInterests = query
+                      ? interests.filter(({ tag }) => tag.toLowerCase().includes(query))
+                      : interests
+
+                    if (!visibleInterests.length) return null
+
+                    return (
+                      <section key={category.id}>
+                        <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted">
+                          {category.label}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {visibleInterests.map(({ tag }) => (
+                            <ChoicePill
+                              key={tag}
+                              selected={profile.interests.includes(tag)}
+                              onClick={() => toggleProfileList('interests', tag)}
+                            >
+                              {tag}
+                            </ChoicePill>
+                          ))}
+                        </div>
+                      </section>
+                    )
+                  })}
+                  {interestFilter.trim() && !INTEREST_GROUPS.some(({ interests }) =>
+                    interests.some(({ tag }) => tag.toLowerCase().includes(interestFilter.trim().toLowerCase())),
+                  ) && (
+                    <p className="py-6 text-center text-sm text-muted">
+                      No interests match &ldquo;{interestFilter}&rdquo;.
+                    </p>
+                  )}
+                </div>
+                <p className="mt-4 text-xs text-muted">
+                  {profile.interests.length ? `${profile.interests.length} marked` : 'Nothing is too niche.'}
+                  {profile.interests.length < MIN_INTERESTS && ` · choose ${MIN_INTERESTS - profile.interests.length} more`}
+                </p>
               </Question>
             )}
 

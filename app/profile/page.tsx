@@ -7,8 +7,11 @@ import Link from 'next/link'
 import { LogOut, Edit2, Check, X, Ticket, Wallet, ArrowRight, MapPin, Compass, Clock3, Sparkles, Route } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { INTEREST_TAGS } from '@serendipity-hq/design'
+import { interestsByCategory } from '@serendipity-hq/design'
 import { LaneBadge, Reveal } from '@serendipity-hq/ui'
+
+const INTEREST_GROUPS = interestsByCategory()
+const MIN_INTERESTS = 4
 
 function formatDate(dt: string) {
   return new Date(dt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -64,7 +67,7 @@ export default function ProfilePage() {
   }
 
   function saveInterests() {
-    if (tempInterests.length >= 2) {
+    if (tempInterests.length >= MIN_INTERESTS) {
       updateUserInterests(tempInterests)
       setEditingInterests(false)
     }
@@ -185,27 +188,34 @@ export default function ProfilePage() {
               </button>
             ) : (
               <div className="flex gap-2">
-                <button onClick={saveInterests} disabled={tempInterests.length < 2} aria-label="Save interests" className="flex min-h-11 min-w-11 items-center justify-center text-teal disabled:opacity-40"><Check className="w-4 h-4" strokeWidth={2} aria-hidden="true" /></button>
+                <button onClick={saveInterests} disabled={tempInterests.length < MIN_INTERESTS} aria-label="Save interests" className="flex min-h-11 min-w-11 items-center justify-center text-teal disabled:opacity-40"><Check className="w-4 h-4" strokeWidth={2} aria-hidden="true" /></button>
                 <button onClick={() => { setTempInterests(user.interests); setEditingInterests(false) }} aria-label="Cancel editing interests" className="flex min-h-11 min-w-11 items-center justify-center text-muted"><X className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /></button>
               </div>
             )}
           </div>
           {editingInterests ? (
-            <div className="flex flex-wrap gap-2">
-              {INTEREST_TAGS.map((tag) => {
-                const selected = tempInterests.includes(tag)
-                return (
-                  <button
-                    key={tag}
-                    onClick={() => toggleInterest(tag)}
-                    className={`px-3 py-1.5 rounded-full border text-xs tracking-wide transition-all duration-200 ${
-                      selected ? 'bg-charcoal text-cream border-charcoal' : 'text-muted border-border hover:border-sand'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                )
-              })}
+            <div className="max-h-72 overflow-y-auto pr-1 space-y-4">
+              {INTEREST_GROUPS.map(({ category, interests }) => (
+                <div key={category.id}>
+                  <p className="text-[9px] tracking-widest uppercase text-muted/70 mb-1.5">{category.label}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {interests.map(({ tag }) => {
+                      const selected = tempInterests.includes(tag)
+                      return (
+                        <button
+                          key={tag}
+                          onClick={() => toggleInterest(tag)}
+                          className={`px-3 py-1.5 rounded-full border text-xs tracking-wide transition-all duration-200 ${
+                            selected ? 'bg-charcoal text-cream border-charcoal' : 'text-muted border-border hover:border-sand'
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
