@@ -6,7 +6,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { X, ImageIcon, PenLine } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { SEED_USERS } from '@/lib/mock-data'
 import type { Experience, Post } from '@serendipity-hq/design'
 import { LaneBadge, Reveal } from '@serendipity-hq/ui'
 
@@ -14,27 +13,11 @@ function formatEntryDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
 }
 
-function getAuthorName(authorId: string, userId: string, userName: string) {
-  if (authorId === userId) return userName
-  return SEED_USERS.find((u) => u.id === authorId)?.name ?? 'Someone'
-}
-
-function getAuthorSeed(authorId: string, userId: string) {
-  if (authorId === userId) return `profile-${userId}`
-  return SEED_USERS.find((u) => u.id === authorId)?.avatarSeed ?? '000'
-}
-
-function EntryCard({ post, currentUserId, currentUserName, showAuthor, experiences }: {
+function EntryCard({ post, experiences }: {
   post: Post
-  currentUserId: string
-  currentUserName: string
-  showAuthor: boolean
   experiences: Experience[]
 }) {
   const exp = post.experienceId ? experiences.find((e) => e.id === post.experienceId) : null
-  const authorName = getAuthorName(post.authorId, currentUserId, currentUserName)
-  const avatarSeed = getAuthorSeed(post.authorId, currentUserId)
-  const isOwn = post.authorId === currentUserId
 
   return (
     <article className="liquid-card rounded-[28px] overflow-hidden">
@@ -72,25 +55,7 @@ function EntryCard({ post, currentUserId, currentUserName, showAuthor, experienc
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-white/50">
-          {showAuthor ? (
-            <Link
-              href={isOwn ? '/profile' : `/people/${post.authorId}`}
-              className="flex items-center gap-2 group"
-            >
-              <Image
-                src={`https://picsum.photos/seed/${avatarSeed}/80/80`}
-                alt={authorName}
-                width={20}
-                height={20}
-                className="rounded-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-              />
-              <span className="text-[10px] tracking-wide text-muted group-hover:text-charcoal transition-colors">
-                {authorName}
-              </span>
-            </Link>
-          ) : (
-            <span className="text-[10px] tracking-wide text-muted/60 italic">Your diary</span>
-          )}
+          <span className="text-[10px] tracking-wide text-muted/60 italic">Private reflection</span>
           <time className="text-[10px] tracking-wide text-muted">
             {formatEntryDate(post.createdAt)}
           </time>
@@ -121,8 +86,11 @@ function WriteEntryModal({ onClose, onSubmit }: {
   function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    setPhotoPreview(url)
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      if (typeof reader.result === 'string') setPhotoPreview(reader.result)
+    })
+    reader.readAsDataURL(file)
   }
 
   function removePhoto() {
@@ -144,18 +112,21 @@ function WriteEntryModal({ onClose, onSubmit }: {
     >
       <form
         onSubmit={handleSubmit}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-entry-title"
         className="liquid-card rounded-[28px] w-full max-w-lg max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-6 pb-4">
           <div>
-            <h2 className="font-serif text-xl text-charcoal">New entry</h2>
+            <h2 id="new-entry-title" className="font-serif text-xl text-charcoal">New entry</h2>
             <p className="text-[10px] tracking-widest uppercase text-muted mt-1">
               {formatEntryDate(new Date().toISOString())}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="text-muted hover:text-charcoal transition-colors mt-1">
-            <X className="w-4 h-4" strokeWidth={1.5} />
+          <button type="button" onClick={onClose} aria-label="Close new entry" className="mt-1 flex min-h-11 min-w-11 items-center justify-center text-muted hover:text-charcoal transition-colors">
+            <X className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
 
@@ -166,9 +137,10 @@ function WriteEntryModal({ onClose, onSubmit }: {
             <button
               type="button"
               onClick={removePhoto}
-              className="absolute top-2 right-2 bg-charcoal/60 hover:bg-charcoal text-white rounded-full p-1.5 transition-colors"
+              aria-label="Remove photo"
+              className="absolute top-2 right-2 flex min-h-11 min-w-11 items-center justify-center bg-charcoal/60 hover:bg-charcoal text-white rounded-full transition-colors"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3 h-3" aria-hidden="true" />
             </button>
           </div>
         ) : (
@@ -204,9 +176,10 @@ function WriteEntryModal({ onClose, onSubmit }: {
               <button
                 type="button"
                 onClick={() => setSelectedExp(null)}
-                className="text-muted hover:text-charcoal transition-colors ml-auto"
+                aria-label={`Detach ${selectedExpObj.title}`}
+                className="ml-auto flex min-h-11 min-w-11 items-center justify-center text-muted hover:text-charcoal transition-colors"
               >
-                <X className="w-3 h-3" strokeWidth={1.5} />
+                <X className="w-3 h-3" strokeWidth={1.5} aria-hidden="true" />
               </button>
             </div>
           ) : bookedExps.length > 0 ? (
@@ -259,9 +232,8 @@ function WriteEntryModal({ onClose, onSubmit }: {
 }
 
 export default function JournalPage() {
-  const { user, isLoggedIn, posts, connections, createPost, experiences } = useApp()
+  const { user, isLoggedIn, posts, createPost, experiences } = useApp()
   const router = useRouter()
-  const [tab, setTab] = useState<'diary' | 'field-notes'>('diary')
   const [showWrite, setShowWrite] = useState(false)
 
   useEffect(() => {
@@ -270,97 +242,58 @@ export default function JournalPage() {
 
   if (!user) return null
 
-  const followingIds = connections.filter((c) => c.fromId === user.id).map((c) => c.toId)
-
   const diaryPosts = [...posts]
     .filter((p) => p.authorId === user.id)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-  const fieldNotesPosts = [...posts]
-    .filter((p) => followingIds.includes(p.authorId))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-  const displayed = tab === 'diary' ? diaryPosts : fieldNotesPosts
 
   return (
     <div className="max-w-xl mx-auto px-5 py-10 md:py-14">
       {/* Header */}
       <Reveal>
-        <div className="flex items-end justify-between mb-1">
-          <h1 className="font-serif text-3xl text-charcoal">Journal.</h1>
-          {tab === 'diary' && (
-            <button
-              onClick={() => setShowWrite(true)}
-              className="flex items-center gap-2 text-[10px] tracking-widest uppercase text-muted hover:text-charcoal transition-colors"
-            >
-              <PenLine className="w-3.5 h-3.5" strokeWidth={1.5} />
-              New entry
-            </button>
-          )}
+        <div className="flex items-start justify-between gap-5 mb-1">
+          <div>
+            <p className="mb-2 text-[10px] uppercase tracking-[0.2em] text-muted">Only you can see this</p>
+            <h1 className="font-serif text-3xl text-charcoal">Journal.</h1>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-charcoal-light">
+              Hold on to what changed, surprised, or stayed with you. Your reflections are private.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowWrite(true)}
+            className="flex min-h-11 shrink-0 items-center gap-2 text-[10px] tracking-widest uppercase text-muted hover:text-charcoal transition-colors"
+          >
+            <PenLine className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
+            New entry
+          </button>
         </div>
       </Reveal>
 
-      {/* Tabs */}
       <Reveal delay={50}>
-        <div className="flex border-b border-border mt-6 mb-8">
-          {(['diary', 'field-notes'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`pb-3 mr-7 text-[10px] tracking-widest uppercase transition-all duration-200 border-b-2 -mb-px ${
-                tab === t
-                  ? 'border-charcoal text-charcoal'
-                  : 'border-transparent text-muted hover:text-charcoal-light'
-              }`}
-            >
-              {t === 'diary' ? 'Diary' : 'Field Notes'}
-            </button>
-          ))}
-        </div>
+        <div className="my-8 border-b border-border" />
       </Reveal>
 
       {/* Empty states */}
-      {displayed.length === 0 ? (
+      {diaryPosts.length === 0 ? (
         <Reveal>
           <div className="liquid-card text-center py-16 px-8 rounded-[28px]">
-            {tab === 'diary' ? (
-              <>
-                <p className="font-serif text-xl text-charcoal mb-2">Your diary is blank.</p>
-                <p className="text-sm text-muted mb-6 max-w-xs mx-auto leading-relaxed">
-                  Every experience is worth a reflection. Start with one.
-                </p>
-                <button
-                  onClick={() => setShowWrite(true)}
-                  className="text-xs tracking-widest uppercase text-terracotta link-underline"
-                >
-                  Write your first entry
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="font-serif text-xl text-charcoal mb-2">No field notes yet.</p>
-                <p className="text-sm text-muted mb-6 max-w-xs mx-auto leading-relaxed">
-                  Follow people to see their entries here.
-                </p>
-                <Link
-                  href="/people"
-                  className="text-xs tracking-widest uppercase text-terracotta link-underline"
-                >
-                  Find people
-                </Link>
-              </>
-            )}
+            <p className="font-serif text-xl text-charcoal mb-2">Your journal is blank.</p>
+            <p className="text-sm text-muted mb-6 max-w-xs mx-auto leading-relaxed">
+              Begin with a moment, a question, or something you want to remember.
+            </p>
+            <button
+              onClick={() => setShowWrite(true)}
+              className="min-h-11 text-xs tracking-widest uppercase text-terracotta link-underline"
+            >
+              Write your first entry
+            </button>
           </div>
         </Reveal>
       ) : (
         <div className="space-y-5">
-          {displayed.map((post, i) => (
+          {diaryPosts.map((post, i) => (
             <Reveal key={post.id} delay={i * 50}>
               <EntryCard
                 post={post}
-                currentUserId={user.id}
-                currentUserName={user.name}
-                showAuthor={tab === 'field-notes'}
                 experiences={experiences}
               />
             </Reveal>

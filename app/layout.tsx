@@ -1,7 +1,21 @@
 import type { Metadata } from 'next'
+import { Cormorant_Garamond, Inter } from 'next/font/google'
 import './globals.css'
 import { AppProvider } from '@/context/AppContext'
 import AppNav from '@/components/AppNav'
+
+const homeSerif = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-home-serif',
+  display: 'swap',
+})
+
+const homeSans = Inter({
+  subsets: ['latin'],
+  variable: '--font-home-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Serendipity — Experiences Worth Having',
@@ -10,7 +24,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${homeSerif.variable} ${homeSans.variable}`}
+    >
       <body className="min-h-screen text-charcoal">
         <AppProvider>
           <AppNav />

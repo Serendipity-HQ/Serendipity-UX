@@ -6,7 +6,8 @@ import { Check, Sparkles } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
 import { INTEREST_TAGS, LANE_LABELS } from '@serendipity-hq/design'
 import type { Lane } from '@serendipity-hq/design'
-import { ExperienceCard, LaneBadge, Reveal } from '@serendipity-hq/ui'
+import { LaneBadge, Reveal } from '@serendipity-hq/ui'
+import ExperienceCard from '@/components/ExperienceCard'
 
 const LANES: Lane[] = ['passion', 'growth', 'surprise']
 

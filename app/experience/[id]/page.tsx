@@ -4,10 +4,13 @@ import { use } from 'react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MapPin, Clock, Users, ArrowLeft, CheckCircle } from 'lucide-react'
+import { MapPin, Clock, Users, ArrowLeft, CheckCircle, ExternalLink } from 'lucide-react'
 import { useApp } from '@/context/AppContext'
-import { LaneBadge, ExperienceCard, Reveal, GuestList } from '@serendipity-hq/ui'
+import { LaneBadge, Reveal, GuestList } from '@serendipity-hq/ui'
+import ExperienceCard from '@/components/ExperienceCard'
 import { EXPERIENCE_ATTENDEES, SEED_USERS } from '@/lib/mock-data'
+import InvitationActions from '@/components/InvitationActions'
+import { externalUrlFor, hasKnownPrice, publicExperienceTags } from '@/lib/experience-metadata'
 
 function formatDateTime(dt: string) {
   const d = new Date(dt)
@@ -23,7 +26,26 @@ export default function ExperienceDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const { bookings, isLoggedIn, experiences, hosts } = useApp()
+  const {
+    bookings,
+    isLoggedIn,
+    experiences,
+    hosts,
+    eventsLoaded,
+    addToPassionPath,
+    isOnPassionPath,
+  } = useApp()
+
+  if (!eventsLoaded) {
+    return (
+      <div className="mx-auto max-w-3xl px-5 py-14" role="status" aria-live="polite">
+        <div className="liquid-card rounded-[28px] px-6 py-16 text-center">
+          <p className="font-serif text-2xl text-charcoal">Opening your invitation…</p>
+          <p className="mt-2 text-sm text-muted">Gathering the details from your host.</p>
+        </div>
+      </div>
+    )
+  }
 
   const experience = experiences.find((e) => e.id === id)
   if (!experience) notFound()
@@ -31,9 +53,12 @@ export default function ExperienceDetailPage({
   const host = hosts.find((h) => h.id === experience.hostId)
   if (!host) notFound()
   const { date, time } = formatDateTime(experience.dateTime)
+  const externalUrl = externalUrlFor(experience)
+  const knownPrice = hasKnownPrice(experience)
+  const visibleTags = publicExperienceTags(experience)
   const spotsLeft = experience.spotsTotal - experience.spotsBooked
-  const isFull = spotsLeft === 0
-  const isAlreadyBooked = bookings.some(
+  const isFull = !externalUrl && spotsLeft === 0
+  const isAlreadyBooked = !externalUrl && bookings.some(
     (b) => b.experienceId === id && b.status !== 'cancelled'
   )
 
@@ -108,20 +133,20 @@ export default function ExperienceDetailPage({
                 <MapPin className="w-3.5 h-3.5 text-muted mt-0.5 flex-shrink-0" strokeWidth={1.5} />
                 <p className="text-sm text-charcoal">{experience.location}</p>
               </div>
-              <div className="flex items-start gap-3">
-                <Users className="w-3.5 h-3.5 text-muted mt-0.5 flex-shrink-0" strokeWidth={1.5} />
-                <div className="flex-1">
-                  <p className="text-sm text-charcoal mb-1.5">
-                    {isFull ? 'Fully booked' : `${spotsLeft} of ${experience.spotsTotal} spots remaining`}
-                  </p>
-                  <div className="bg-white/45 rounded-full h-1 w-full max-w-[160px]">
-                    <div
-                      className="bg-terracotta h-1 rounded-full transition-all duration-500"
-                      style={{ width: `${(experience.spotsBooked / experience.spotsTotal) * 100}%` }}
-                    />
+              {externalUrl ? (
+                <div className="flex items-start gap-3">
+                  <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted" strokeWidth={1.5} />
+                  <p className="text-sm text-charcoal">Ticket availability is confirmed on the organizer&apos;s site.</p>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <Users className="w-3.5 h-3.5 text-muted mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+                  <div className="flex-1">
+                    <p className="text-sm text-charcoal mb-1.5">{isFull ? 'Fully booked' : `${spotsLeft} of ${experience.spotsTotal} spots remaining`}</p>
+                    <div className="bg-white/45 rounded-full h-1 w-full max-w-[160px]"><div className="bg-terracotta h-1 rounded-full transition-all duration-500" style={{ width: `${(experience.spotsBooked / experience.spotsTotal) * 100}%` }} /></div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </Reveal>
 
@@ -134,7 +159,7 @@ export default function ExperienceDetailPage({
           {/* Tags */}
           <Reveal delay={120}>
             <div className="flex flex-wrap gap-2">
-              {experience.tags.map((tag) => (
+              {visibleTags.map((tag) => (
                 <span
                   key={tag}
                   className="border border-white/16 bg-white/8 text-[10px] tracking-widest uppercase text-muted rounded-full px-3 py-1.5"
@@ -146,7 +171,7 @@ export default function ExperienceDetailPage({
           </Reveal>
 
           {/* Guest list */}
-          <Reveal delay={140}>
+          {!externalUrl && <Reveal delay={140}>
             <div className="liquid-card rounded-[28px] p-5">
               <GuestList
                 spotsBooked={experience.spotsBooked}
@@ -156,7 +181,7 @@ export default function ExperienceDetailPage({
                 experiences={experiences}
               />
             </div>
-          </Reveal>
+          </Reveal>}
 
           {/* Host */}
           <Reveal delay={160}>
@@ -184,15 +209,21 @@ export default function ExperienceDetailPage({
         <div className="md:col-span-1">
           <Reveal delay={100}>
             <div className="liquid-card sticky top-20 rounded-[28px] p-6">
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="font-serif text-3xl text-charcoal">${experience.price}</span>
-                <span className="text-xs text-muted ml-1">per person</span>
+              <div className="mb-1 flex items-baseline gap-1">
+                <span className={`${knownPrice ? 'font-serif text-3xl' : 'text-sm font-semibold uppercase tracking-wider'} text-charcoal`}>
+                  {knownPrice ? (experience.price === 0 ? 'Free' : `$${experience.price}`) : 'See ticket site'}
+                </span>
+                {knownPrice && experience.price > 0 && <span className="ml-1 text-xs text-muted">per person</span>}
               </div>
-              <p className="text-[10px] text-muted mb-6">
-                + ${(experience.price * 0.08).toFixed(2)} service fee
+              <p className="mb-6 text-[10px] text-muted">
+                {externalUrl ? 'Final price and terms are set by the event organizer.' : `+ $${(experience.price * 0.08).toFixed(2)} service fee`}
               </p>
 
-              {isAlreadyBooked ? (
+              {externalUrl ? (
+                <a href={externalUrl} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center gap-2 rounded-full bg-terracotta py-3.5 text-center text-xs uppercase tracking-widest text-white transition-colors hover:bg-terracotta/85">
+                  View tickets <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ) : isAlreadyBooked ? (
                 <div className="flex items-center gap-2 text-teal text-xs font-medium py-3">
                   <CheckCircle className="w-4 h-4" strokeWidth={1.5} />
                   You&apos;re booked in
@@ -221,8 +252,15 @@ export default function ExperienceDetailPage({
               )}
 
               <p className="text-[10px] text-muted text-center mt-4 leading-relaxed">
-                Free cancellation up to 48 hours before
+                {externalUrl ? 'Ticketing opens in a new tab.' : 'Free cancellation up to 48 hours before'}
               </p>
+
+              <InvitationActions
+                experience={experience}
+                isLoggedIn={isLoggedIn}
+                isOnPassionPath={isOnPassionPath(experience.id)}
+                onAddToPassionPath={() => addToPassionPath(experience.id)}
+              />
             </div>
           </Reveal>
         </div>

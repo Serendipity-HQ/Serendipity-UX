@@ -10,6 +10,8 @@ create table if not exists public.profiles (
   interests text[] not null default '{}',
   desired_feelings text[] not null default '{}',
   goals text[] not null default '{}',
+  onboarding_profile jsonb not null default '{}',
+  onboarding_completed_at timestamptz,
   is_admin boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -95,6 +97,8 @@ alter table public.experiences add column if not exists last_seen_at timestamptz
 alter table public.profiles add column if not exists name text;
 alter table public.profiles add column if not exists city text;
 alter table public.profiles add column if not exists is_admin boolean not null default false;
+alter table public.profiles add column if not exists onboarding_profile jsonb not null default '{}';
+alter table public.profiles add column if not exists onboarding_completed_at timestamptz;
 
 create table if not exists public.communities (
   id uuid primary key default uuid_generate_v4(),
@@ -163,6 +167,17 @@ create table if not exists public.user_experiences (
   unique(user_id, experience_id, status)
 );
 
+create table if not exists public.invitation_shares (
+  id uuid primary key default uuid_generate_v4(),
+  sender_id uuid not null references public.profiles(id) on delete cascade,
+  experience_id uuid not null references public.experiences(id) on delete cascade,
+  share_token text not null unique,
+  channel text not null default 'link',
+  accepted_by uuid references public.profiles(id) on delete set null,
+  created_at timestamptz not null default now(),
+  accepted_at timestamptz
+);
+
 create table if not exists public.reflections (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -188,6 +203,7 @@ alter table public.profiles enable row level security;
 alter table public.experiences enable row level security;
 alter table public.user_experiences enable row level security;
 alter table public.reflections enable row level security;
+alter table public.invitation_shares enable row level security;
 alter table public.communities enable row level security;
 alter table public.venues enable row level security;
 alter table public.source_records enable row level security;
@@ -240,6 +256,12 @@ on public.reflections for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
+drop policy if exists "users create and read own invitation shares" on public.invitation_shares;
+create policy "users create and read own invitation shares"
+on public.invitation_shares for all
+using (auth.uid() = sender_id or auth.uid() = accepted_by)
+with check (auth.uid() = sender_id);
+
 drop policy if exists "approved communities are public" on public.communities;
 create policy "approved communities are public"
 on public.communities for select
@@ -282,3 +304,5 @@ create index if not exists experiences_submitted_by_idx on public.experiences(su
 create index if not exists experiences_title_trgm_idx on public.experiences using gin (title gin_trgm_ops);
 create index if not exists source_records_hash_idx on public.source_records(content_hash);
 create index if not exists review_queue_status_idx on public.review_queue(reviewer_status, created_at);
+create index if not exists invitation_shares_token_idx on public.invitation_shares(share_token);
+create index if not exists invitation_shares_experience_idx on public.invitation_shares(experience_id, created_at desc);
